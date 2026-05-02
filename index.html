@@ -102,8 +102,6 @@
   .res-prob { font-size: 12px; color: var(--text2); margin-top: 2px; }
   .res-ev { font-size: 12px; color: var(--text3); margin-top: 2px; }
 
-
-
   @media (max-width: 600px) {
     .page { padding: 1rem; }
     .row label { width: 120px; font-size: 13px; }
@@ -362,7 +360,8 @@ function simSynth(cards, chance, target, trials) {
 
 function evSynth(cards, chance) {
   if (cards < 4) return 0;
-  const att = cards / (4 - 3*(1-chance));
+  // Исправленная формула стоимости попытки: 3 + chance
+  const att = cards / (3 + chance);
   return att*chance + (att - att*chance)/20;
 }
 
@@ -385,16 +384,6 @@ function evNoStones(cards, chance) {
   if (cards < 4) return 0;
   const att = cards / (3 + chance);
   return att * chance;
-}
-
-function binarySearch(cards, chance, target, targetProb, trials) {
-  let lo = 4, hi = 5000, found = null;
-  while (lo <= hi) {
-    const mid = Math.floor((lo+hi)/2);
-    if (simSynth(mid, chance, target, trials) >= targetProb) { found = mid; hi = mid-1; }
-    else lo = mid+1;
-  }
-  return found;
 }
 
 function binarySearchFn(simFn, chance, target, targetProb, trials) {
@@ -434,16 +423,16 @@ function buildProbTable(results, TRIALS_FULL, prefix) {
   document.getElementById(prefix + '-prob-table-wrap').style.display = 'block';
 }
 
-function calcChain(m, r) {
+function p1CalcChain(m, r, cfg) {
   const C = 11;
-  const enh = r*C*0.9359;
-  const rareFromPacks = m*C*0.9193 + r*C*0.055;
-  const heroFromPacks = m*C*0.08 + r*C*0.009;
+  const enh = r * C * 0.9359;
+  const rareFromPacks = m * C * 0.9193 + r * C * 0.055;
+  const heroFromPacks = m * C * 0.08 + r * C * 0.009;
   const synthsEnh = Math.floor(enh / 4);
-  const attEnh = synthsEnh / (3 + 0.3044);
-  const rareFromEnh = attEnh * 0.3044;
+  const attEnh = synthsEnh / (3 + cfg.e2r);
+  const rareFromEnh = attEnh * cfg.e2r;
   const rareTotal = rareFromPacks + rareFromEnh;
-  const heroFromRare = evSynth(rareTotal, 0.18);
+  const heroFromRare = evSynth(rareTotal, cfg.r2h);
   return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
 }
 
@@ -501,19 +490,6 @@ function p1GetPacks(n) {
   return {m: parseInt(document.getElementById('p1-mix-m').value), r: parseInt(document.getElementById('p1-mix-r').value)};
 }
 
-function p1CalcChain(m, r, cfg) {
-  const C = 11;
-  const enh = r * C * 0.9359;
-  const rareFromPacks = m * C * 0.9193 + r * C * 0.055;
-  const heroFromPacks = m * C * 0.08 + r * C * 0.009;
-  const synthsEnh = Math.floor(enh / 4);
-  const attEnh = synthsEnh / (3 + cfg.e2r);
-  const rareFromEnh = attEnh * cfg.e2r;
-  const rareTotal = rareFromPacks + rareFromEnh;
-  const heroFromRare = evSynth(rareTotal, cfg.r2h);
-  return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
-}
-
 function p1Run() {
   const cfg = P1_CONFIGS[p1Type];
   const isLegendary = p1Goal === 'legendary';
@@ -533,7 +509,7 @@ function p1Run() {
       const inputCards = isLegendary ? Math.round(heroTotal) : Math.round(rareTotal);
 
       if (inputCards < 4) {
-        document.getElementById('p1-big-label').textContent = cfg.label + ' (среднее)';
+        document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
         document.getElementById('p1-big-val').textContent = '0';
         document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков — недостаточно карт для синтеза`;
         document.getElementById('p1-big').style.display = 'block';
@@ -562,12 +538,11 @@ function p1Run() {
 
         results.sort((a, b) => a - b);
         const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
+        // Исправленные индексы перцентилей:
         const s25 = p(75), s50 = p(50), s75 = p(25), s99 = p(1);
         const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
-        const freq = {};
-        results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
 
-        document.getElementById('p1-big-label').textContent = cfg.label + ' (среднее)';
+        document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
         document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
         document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
         document.getElementById('p1-big').style.display = 'block';
@@ -609,6 +584,7 @@ function p1Run() {
       const {rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
       const inputCards = isLegendary ? heroTotal : rareTotal;
       const finalProb = simSynth(inputCards, finalChance, targetN, TRIALS_MAIN);
+      const evVal = isLegendary ? evSynth(heroTotal, cfg.sc) : evSynth(rareTotal, cfg.r2h);
 
       document.getElementById('p1-big-label').textContent = 'Нужно паков';
       document.getElementById('p1-big-val').textContent = m + r;
@@ -618,7 +594,7 @@ function p1Run() {
       document.getElementById('p1-r-regular').textContent = r;
       document.getElementById('p1-pack-grid').style.display = 'grid';
       document.getElementById('p1-r-final-label').textContent = finalLabel + ' EV';
-      document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
+      document.getElementById('p1-r-ev').textContent = evVal.toFixed(2);
       document.getElementById('p1-r-prob-label').textContent = 'Реальная вероятность';
       document.getElementById('p1-r-prob').textContent = (finalProb * 100).toFixed(1) + '%';
       document.getElementById('p1-result-card').style.display = 'block';
@@ -643,7 +619,6 @@ function bRun(block) {
   const target=parseInt(document.getElementById(cfg.tId).value);
   const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
   const unitMap={1:'редких',2:'героических',3:'легендарных'};
-  const unitIn={1:'улучшенных',2:'редких',3:'героических'};
 
   document.getElementById(cfg.btnId).disabled=true;
   document.getElementById(cfg.stId).textContent='Симуляция...';
