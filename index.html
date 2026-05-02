@@ -561,7 +561,6 @@ function p1Run() {
       runChunk();
       return;
 
-      document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
     } else {
       const targetProb = parseInt(document.getElementById('p1-prob').value) / 100;
       const targetN = parseInt(document.getElementById('p1-target').value);
@@ -598,9 +597,9 @@ function p1Run() {
       document.getElementById('p1-result-card').style.display = 'block';
       document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
       document.getElementById('p1-note').textContent = '';
+      document.getElementById('p1-btn').disabled = false;
     }
 
-    document.getElementById('p1-btn').disabled = false;
   }, 50);
 }
 
