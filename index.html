@@ -407,6 +407,33 @@ function binarySearchFn(simFn, chance, target, targetProb, trials) {
   return found;
 }
 
+function buildProbTable(results, TRIALS_FULL, prefix) {
+  const freq = {};
+  results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+  const maxOut = results[results.length - 1];
+  const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
+  const evRound = Math.round(evVal);
+  const tbody = document.getElementById(prefix + '-prob-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  const showMax = Math.min(maxOut, Math.max(evRound * 2, 10));
+  for (let k = 1; k <= showMax; k++) {
+    let cumK = 0;
+    for (let j = k; j <= maxOut; j++) cumK += (freq[j] || 0);
+    const pct = cumK / TRIALS_FULL * 100;
+    const isEv = k === evRound;
+    const color = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--text)' : 'var(--text2)';
+    const bg = isEv ? 'background:rgba(29,158,117,0.08)' : '';
+    let label = pct >= 99 ? 'почти гарантировано' : pct >= 75 ? 'очень вероятно' : pct >= 50 ? 'вероятно' : pct >= 25 ? 'возможно' : pct >= 10 ? 'маловероятно' : 'редко';
+    tbody.innerHTML += `<tr style="${bg}">
+      <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);color:var(--text)">≥ ${k}${isEv ? ' ← среднее' : ''}</td>
+      <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;font-weight:500;color:${color}">${pct.toFixed(1)}%</td>
+      <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--text2);font-size:12px">${label}</td>
+    </tr>`;
+  }
+  document.getElementById(prefix + '-prob-table-wrap').style.display = 'block';
+}
+
 function calcChain(m, r) {
   const C = 11;
   const enh = r*C*0.9359;
@@ -552,7 +579,7 @@ function p1Run() {
         document.getElementById('p1-s75').textContent = s75;
         document.getElementById('p1-s99').textContent = s99;
         document.getElementById('p1-scenarios').style.display = 'block';
-        p2BuildTable(results, TRIALS_FULL, 'p1');
+        buildProbTable(results, TRIALS_FULL, 'p1');
         document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
         document.getElementById('p1-note').textContent = '';
         document.getElementById('p1-btn').disabled = false;
