@@ -503,50 +503,65 @@ function p1Run() {
       const m = parseInt(document.getElementById('p1-mix-m').value);
       const r = parseInt(document.getElementById('p1-mix-r').value);
       const {enh, rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
-      // Для героических — считаем из редких, для легендарных — из героических
       const inputCards = isLegendary ? Math.round(heroTotal) : Math.round(rareTotal);
-      const TRIALS_FULL = 50000;
-      const results = [];
-      for (let i = 0; i < TRIALS_FULL; i++) {
-        let c = inputCards, out = 0, st = 0;
-        while (c >= 4) { c -= 4; if (Math.random() < finalChance) out++; else { st++; c++; } }
-        out += Math.floor(st / 20);
-        results.push(out);
+
+      if (inputCards < 4) {
+        document.getElementById('p1-big-label').textContent = cfg.label + ' (среднее)';
+        document.getElementById('p1-big-val').textContent = '0';
+        document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков — недостаточно карт для синтеза`;
+        document.getElementById('p1-big').style.display = 'block';
+        document.getElementById('p1-status').textContent = '';
+        document.getElementById('p1-btn').disabled = false;
+        return;
       }
-      results.sort((a, b) => a - b);
 
-      // Перцентили
-      const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
-      const s25 = p(25), s50 = p(50), s75 = p(75), s99 = p(99);
-      const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
+      const TRIALS_FULL = 20000;
+      const CHUNK = 2000;
+      const results = [];
 
-      // Частоты для таблицы
-      const freq = {};
-      results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
-      const maxOut = results[results.length - 1];
+      function runChunk() {
+        const end = Math.min(results.length + CHUNK, TRIALS_FULL);
+        while (results.length < end) {
+          let c = inputCards, out = 0, st = 0;
+          while (c >= 4) { c -= 4; if (Math.random() < finalChance) out++; else { st++; c++; } }
+          out += Math.floor(st / 20);
+          results.push(out);
+        }
+        if (results.length < TRIALS_FULL) {
+          document.getElementById('p1-status').textContent = `Считаем... ${Math.round(results.length/TRIALS_FULL*100)}%`;
+          setTimeout(runChunk, 0);
+          return;
+        }
+
+        results.sort((a, b) => a - b);
+        const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
+        const s25 = p(25), s50 = p(50), s75 = p(75), s99 = p(99);
+        const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
+        const freq = {};
+        results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+
+        document.getElementById('p1-big-label').textContent = cfg.label + ' (среднее)';
+        document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
+        document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
+        document.getElementById('p1-big').style.display = 'block';
+        document.getElementById('p1-r-master').textContent = m;
+        document.getElementById('p1-r-regular').textContent = r;
+        document.getElementById('p1-pack-grid').style.display = 'grid';
+        document.getElementById('p1-s25').textContent = s25;
+        document.getElementById('p1-s50').textContent = s50;
+        document.getElementById('p1-s75').textContent = s75;
+        document.getElementById('p1-s99').textContent = s99;
+        document.getElementById('p1-scenarios').style.display = 'block';
+        p2BuildTable(results, TRIALS_FULL, 'p1');
+        document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
+        document.getElementById('p1-note').textContent = '';
+        document.getElementById('p1-btn').disabled = false;
+      }
+
+      runChunk();
+      return;
 
       document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
-      document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
-      document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
-      document.getElementById().style.display = 'block';
-      document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
-      document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
-      document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
-      document.getElementById('p1-big').style.display = 'block';
-      document.getElementById('p1-r-master').textContent = m;
-      document.getElementById('p1-r-regular').textContent = r;
-      document.getElementById('p1-pack-grid').style.display = 'grid';
-
-      document.getElementById('p1-result-card').style.display = 'none';
-      document.getElementById('p1-s25').textContent = s25;
-      document.getElementById('p1-s50').textContent = s50;
-      document.getElementById('p1-s75').textContent = s75;
-      document.getElementById('p1-s99').textContent = s99;
-      document.getElementById('p1-scenarios').style.display = 'block';
-      p2BuildTable(results, TRIALS_FULL, 'p1');
-      document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
-      document.getElementById('p1-note').textContent = '';
-
     } else {
       const targetProb = parseInt(document.getElementById('p1-prob').value) / 100;
       const targetN = parseInt(document.getElementById('p1-target').value);
