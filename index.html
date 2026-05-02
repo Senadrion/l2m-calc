@@ -124,35 +124,40 @@
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab(0)">Сколько паков нужно</div>
-  <div class="tab" onclick="switchTab(1)">Сколько карт нужно</div>
+  <div class="tab" onclick="switchTab(1)">Сколько классов нужно</div>
+  <div class="tab" onclick="switchTab(2)">Сколько агатионов нужно</div>
 </div>
 
 <!-- ===== КАЛЬКУЛЯТОР 1: Сколько паков ===== -->
 <div class="page active" id="page0">
   <div class="sec">
-    <div class="sec-title">Тип паков</div>
+    <div class="sec-title">Что синтезируем</div>
+    <div class="tog" id="p1-type-tog">
+      <button class="tb on" onclick="p1SetType('class',this)">Карты класса</button>
+      <button class="tb" onclick="p1SetType('agathion',this)">Агатионы</button>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Режим паков</div>
     <div class="tog" id="p1-pack-tog">
       <button class="tb on" onclick="p1SetPack('master',this)">Только мастер</button>
       <button class="tb" onclick="p1SetPack('regular',this)">Только обычные</button>
-      <button class="tb" onclick="p1SetPack('mix',this)">Смешанные (1:5)</button>
+      <button class="tb" onclick="p1SetPack('mix',this)">Своя комбинация</button>
     </div>
   </div>
-  <div class="sec">
-    <div class="sec-title">Шанс синтеза (героические → фиолетовые)</div>
-    <div class="tog" id="p1-synth-tog">
-      <button class="tb" onclick="p1SetSynth(0.09,this)">9%</button>
-      <button class="tb on" onclick="p1SetSynth(0.11,this)">11%</button>
-    </div>
+  <div id="p1-mix-sliders" style="display:none">
+    <div class="row"><label>Мастер паков</label><input type="range" id="p1-mix-m" min="0" max="50" value="6" step="1" oninput="p1MixSlide()"><span class="v" id="p1-mix-mv">6</span></div>
+    <div class="row"><label>Обычных паков</label><input type="range" id="p1-mix-r" min="0" max="100" value="30" step="1" oninput="p1MixSlide()"><span class="v" id="p1-mix-rv">30</span></div>
   </div>
-  <div class="sec">
+  <div class="sec" id="p1-prob-sec">
     <div class="sec-title">Желаемая вероятность</div>
     <div class="row"><label>Вероятность</label><input type="range" id="p1-prob" min="50" max="99" value="90" step="1" oninput="p1Slide('p1-prob','p1-prob-v','%')"><span class="v" id="p1-prob-v">90%</span></div>
   </div>
-  <div class="sec">
-    <div class="sec-title">Цель: фиолетовых карт</div>
+  <div class="sec" id="p1-target-sec">
+    <div class="sec-title" id="p1-target-title">Цель: карт класса</div>
     <div class="row"><label>Количество</label><input type="range" id="p1-target" min="1" max="15" value="1" step="1" oninput="p1Slide('p1-target','p1-target-v','')"><span class="v" id="p1-target-v">1</span></div>
   </div>
-  <button class="run-btn" id="p1-btn" onclick="p1Run()">Найти минимум паков</button>
+  <button class="run-btn" id="p1-btn" onclick="p1Run()">Рассчитать</button>
   <div class="status" id="p1-status"></div>
   <div id="p1-chain-wrap" style="display:none">
     <div class="sec-title" style="margin-bottom:.6rem">Цепочка синтеза (EV)</div>
@@ -163,10 +168,10 @@
       <div class="chain-arrow">→</div>
       <div class="chain-card"><div class="chain-label">Героических</div><div class="chain-val" id="p1-c-hero">—</div></div>
     </div>
-    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:.75rem">↓ синтез героических → фиолетовые</div>
+    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:.75rem" id="p1-chain-sub">↓ синтез героических → итог</div>
   </div>
   <div class="big-result" id="p1-big" style="display:none">
-    <div class="big-label">Нужно паков</div>
+    <div class="big-label" id="p1-big-label">Нужно паков</div>
     <div class="big-val" id="p1-big-val">—</div>
     <div class="big-sub" id="p1-big-sub"></div>
   </div>
@@ -175,9 +180,9 @@
     <div class="pack-card"><div class="pack-label">Обычных паков</div><div class="pack-val" id="p1-r-regular">—</div></div>
   </div>
   <div class="result-card" id="p1-result-card" style="display:none">
-    <div class="result-row"><span class="result-label">Героических карт (EV)</span><span class="result-val" id="p1-r-hero">—</span></div>
-    <div class="result-row"><span class="result-label">Фиолетовых EV</span><span class="result-val" id="p1-r-ev">—</span></div>
-    <div class="result-row"><span class="result-label">Реальная вероятность</span><span class="result-val green" id="p1-r-prob">—</span></div>
+    <div class="result-row"><span class="result-label">Героических (EV)</span><span class="result-val" id="p1-r-hero">—</span></div>
+    <div class="result-row"><span class="result-label" id="p1-r-final-label">Карт класса EV</span><span class="result-val" id="p1-r-ev">—</span></div>
+    <div class="result-row"><span class="result-label" id="p1-r-prob-label">Вероятность получить цель</span><span class="result-val green" id="p1-r-prob">—</span></div>
   </div>
   <div class="note" id="p1-note"></div>
 </div>
@@ -187,7 +192,7 @@
 
   <div class="block">
     <div class="block-title">Улучшенные → Редкие</div>
-    <div class="block-sub">Синтез: 4 улучшенных, шанс 30.44%. При неудаче возвращается 1 улучшенная + 1 камень. 20 камней = 1 редкая (100%).</div>
+    <div class="block-sub">Синтез: 4 улучшенных, шанс 30.44%. При неудаче возвращается 1 улучшенная. Камней нет.</div>
     <div class="row"><label>Хочу редких ≥</label><input type="range" id="b1-target" min="1" max="50" value="5" step="1" oninput="b1Slide('b1-target','b1-tv','')"><span class="v" id="b1-tv">5</span></div>
     <div class="row"><label>Вероятность</label><input type="range" id="b1-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b1-prob','b1-pv','%')"><span class="v" id="b1-pv">90%</span></div>
     <button class="run-btn" id="b1-btn" onclick="bRun(1)">Рассчитать</button>
@@ -245,6 +250,65 @@
 
 </div>
 
+<!-- ===== КАЛЬКУЛЯТОР 3: Сколько агатионов ===== -->
+<div class="page" id="page2">
+
+  <div class="block">
+    <div class="block-title">Улучшенные → Редкие</div>
+    <div class="block-sub">Синтез: 4 улучшенных, шанс 25%. При неудаче возвращается 1 улучшенный. Камней нет.</div>
+    <div class="row"><label>Хочу редких ≥</label><input type="range" id="a1-target" min="1" max="50" value="5" step="1" oninput="aSlide('a1-target','a1-tv','')"><span class="v" id="a1-tv">5</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a1-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a1-prob','a1-pv','%')"><span class="v" id="a1-pv">90%</span></div>
+    <button class="run-btn" id="a1-btn" onclick="aRun(1)">Рассчитать</button>
+    <div class="status" id="a1-st"></div>
+    <div class="res" id="a1-res" style="display:none">
+      <div class="res-left" id="a1-label"></div>
+      <div class="res-right">
+        <div class="res-val rare" id="a1-val">—</div>
+        <div class="res-unit">улучшенных агатионов</div>
+        <div class="res-prob" id="a1-prob-out"></div>
+        <div class="res-ev" id="a1-ev"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Редкие → Героические</div>
+    <div class="block-sub">Синтез: 4 редких, шанс 12%. При неудаче возвращается 1 редкий + 1 камень. 20 камней = 1 героический (100%).</div>
+    <div class="row"><label>Хочу героических ≥</label><input type="range" id="a2-target" min="1" max="30" value="3" step="1" oninput="aSlide('a2-target','a2-tv','')"><span class="v" id="a2-tv">3</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a2-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a2-prob','a2-pv','%')"><span class="v" id="a2-pv">90%</span></div>
+    <button class="run-btn" id="a2-btn" onclick="aRun(2)">Рассчитать</button>
+    <div class="status" id="a2-st"></div>
+    <div class="res" id="a2-res" style="display:none">
+      <div class="res-left" id="a2-label"></div>
+      <div class="res-right">
+        <div class="res-val heroic" id="a2-val">—</div>
+        <div class="res-unit">редких агатионов</div>
+        <div class="res-prob" id="a2-prob-out"></div>
+        <div class="res-ev" id="a2-ev"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Героические → Легендарные</div>
+    <div class="block-sub">Синтез: 4 героических, шанс 9%. При неудаче возвращается 1 героический + 1 камень. 20 камней = 1 легендарный (100%).</div>
+    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="a3-target" min="1" max="20" value="1" step="1" oninput="aSlide('a3-target','a3-tv','')"><span class="v" id="a3-tv">1</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a3-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a3-prob','a3-pv','%')"><span class="v" id="a3-pv">90%</span></div>
+    <button class="run-btn" id="a3-btn" onclick="aRun(3)">Рассчитать</button>
+    <div class="status" id="a3-st"></div>
+    <div class="res" id="a3-res" style="display:none">
+      <div class="res-left" id="a3-label"></div>
+      <div class="res-right">
+        <div class="res-val purple" id="a3-val">—</div>
+        <div class="res-unit">героических агатионов</div>
+        <div class="res-prob" id="a3-prob-out"></div>
+        <div class="res-ev" id="a3-ev"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
 const TRIALS_MAIN = 40000;
 
@@ -277,6 +341,27 @@ function evSynth(cards, chance) {
   return att*chance + (att - att*chance)/20;
 }
 
+function simSynthNoStones(cards, chance, target, trials) {
+  let ok = 0;
+  const c0 = Math.round(cards);
+  for (let i = 0; i < trials; i++) {
+    let c = c0, out = 0;
+    while (c >= 4) {
+      c -= 4;
+      if (Math.random() < chance) out++;
+      else c++;
+    }
+    if (out >= target) ok++;
+  }
+  return ok / trials;
+}
+
+function evNoStones(cards, chance) {
+  if (cards < 4) return 0;
+  const att = cards / (3 + chance);
+  return att * chance;
+}
+
 function binarySearch(cards, chance, target, targetProb, trials) {
   let lo = 4, hi = 5000, found = null;
   while (lo <= hi) {
@@ -287,72 +372,162 @@ function binarySearch(cards, chance, target, targetProb, trials) {
   return found;
 }
 
+function binarySearchFn(simFn, chance, target, targetProb, trials) {
+  let lo = 4, hi = 10000, found = null;
+  while (lo <= hi) {
+    const mid = Math.floor((lo+hi)/2);
+    if (simFn(mid, chance, target, trials) >= targetProb) { found = mid; hi = mid-1; }
+    else lo = mid+1;
+  }
+  return found;
+}
+
 function calcChain(m, r) {
   const C = 11;
   const enh = r*C*0.9359;
   const rareFromPacks = m*C*0.9193 + r*C*0.055;
   const heroFromPacks = m*C*0.08 + r*C*0.009;
-  const rareFromEnh = Math.floor(enh/4)*0.3044;
+  const synthsEnh = Math.floor(enh / 4);
+  const attEnh = synthsEnh / (3 + 0.3044);
+  const rareFromEnh = attEnh * 0.3044;
   const rareTotal = rareFromPacks + rareFromEnh;
   const heroFromRare = Math.floor(rareTotal/4)*0.18;
   return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
 }
 
 // ===== КАЛЬКУЛЯТОР 1 =====
-let p1PackType = 'master', p1Sc = 0.11;
+let p1PackType = 'master', p1Type = 'class';
 
-function p1SetPack(t,btn) { p1PackType=t; document.querySelectorAll('#p1-pack-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
-function p1SetSynth(v,btn) { p1Sc=v; document.querySelectorAll('#p1-synth-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
-function p1Slide(id,outId,s) { document.getElementById(outId).textContent = document.getElementById(id).value+s; }
+const P1_CONFIGS = {
+  class:    { sc: 0.11, label: 'карт класса',          e2r: 0.3044, r2h: 0.18 },
+  agathion: { sc: 0.09, label: 'легендарных агатионов', e2r: 0.25,   r2h: 0.12 },
+};
+
+function p1SetType(t, btn) {
+  p1Type = t;
+  document.querySelectorAll('#p1-type-tog .tb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('p1-target-title').textContent = 'Цель: ' + P1_CONFIGS[t].label;
+}
+
+function p1SetPack(t, btn) {
+  p1PackType = t;
+  document.querySelectorAll('#p1-pack-tog .tb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  const isMix = t === 'mix';
+  document.getElementById('p1-mix-sliders').style.display = isMix ? 'block' : 'none';
+  document.getElementById('p1-prob-sec').style.display = isMix ? 'none' : 'block';
+  document.getElementById('p1-target-sec').style.display = isMix ? 'none' : 'block';
+  document.getElementById('p1-btn').textContent = isMix ? 'Рассчитать из этих паков' : 'Найти минимум паков';
+  ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap'].forEach(id => document.getElementById(id).style.display='none');
+}
+
+function p1MixSlide() {
+  document.getElementById('p1-mix-mv').textContent = document.getElementById('p1-mix-m').value;
+  document.getElementById('p1-mix-rv').textContent = document.getElementById('p1-mix-r').value;
+}
+
+function p1Slide(id, outId, s) { document.getElementById(outId).textContent = document.getElementById(id).value + s; }
 
 function p1GetPacks(n) {
-  if (p1PackType==='master') return {m:n,r:0};
-  if (p1PackType==='regular') return {m:0,r:n};
-  return {m:Math.max(1,Math.round(n/6)),r:Math.round(n*5/6)};
+  if (p1PackType === 'master') return {m: n, r: 0};
+  if (p1PackType === 'regular') return {m: 0, r: n};
+  return {m: parseInt(document.getElementById('p1-mix-m').value), r: parseInt(document.getElementById('p1-mix-r').value)};
+}
+
+function p1CalcChain(m, r, cfg) {
+  const C = 11;
+  const enh = r * C * 0.9359;
+  const rareFromPacks = m * C * 0.9193 + r * C * 0.055;
+  const heroFromPacks = m * C * 0.08 + r * C * 0.009;
+  const synthsEnh = Math.floor(enh / 4);
+  const attEnh = synthsEnh / (3 + cfg.e2r);
+  const rareFromEnh = attEnh * cfg.e2r;
+  const rareTotal = rareFromPacks + rareFromEnh;
+  const heroFromRare = Math.floor(rareTotal / 4) * cfg.r2h;
+  return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
 }
 
 function p1Run() {
-  const targetProb = parseInt(document.getElementById('p1-prob').value)/100;
-  const targetPurple = parseInt(document.getElementById('p1-target').value);
+  const cfg = P1_CONFIGS[p1Type];
   document.getElementById('p1-btn').disabled = true;
-  document.getElementById('p1-status').textContent = 'Поиск...';
+  document.getElementById('p1-status').textContent = p1PackType === 'mix' ? 'Считаем...' : 'Поиск...';
   ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap'].forEach(id => document.getElementById(id).style.display='none');
 
   setTimeout(() => {
-    let lo=1, hi=1000, found=null;
-    while (lo<=hi) {
-      const mid = Math.floor((lo+hi)/2);
-      const {m,r} = p1GetPacks(mid);
-      const {heroTotal} = calcChain(m,r);
-      if (heroTotal < 4) { lo=mid+1; continue; }
-      if (simSynth(heroTotal, p1Sc, targetPurple, TRIALS_MAIN) >= targetProb) { found=mid; hi=mid-1; }
-      else lo=mid+1;
+
+    if (p1PackType === 'mix') {
+      const m = parseInt(document.getElementById('p1-mix-m').value);
+      const r = parseInt(document.getElementById('p1-mix-r').value);
+      const {enh, rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
+      const ev = evSynth(heroTotal, cfg.sc);
+
+      document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
+      document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
+      document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
+      document.getElementById('p1-chain-sub').textContent = `↓ синтез героических → ${cfg.label}`;
+      document.getElementById('p1-chain-wrap').style.display = 'block';
+      document.getElementById('p1-big-label').textContent = cfg.label + ' (EV)';
+      document.getElementById('p1-big-val').textContent = ev.toFixed(1);
+      document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
+      document.getElementById('p1-big').style.display = 'block';
+      document.getElementById('p1-r-master').textContent = m;
+      document.getElementById('p1-r-regular').textContent = r;
+      document.getElementById('p1-pack-grid').style.display = 'grid';
+      document.getElementById('p1-r-hero').textContent = heroTotal.toFixed(1);
+      document.getElementById('p1-r-final-label').textContent = cfg.label + ' EV';
+      document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
+      document.getElementById('p1-r-prob-label').textContent = 'Вероятность ≥1';
+      const prob1 = simSynth(heroTotal, cfg.sc, 1, TRIALS_MAIN);
+      document.getElementById('p1-r-prob').textContent = (prob1 * 100).toFixed(1) + '%';
+      document.getElementById('p1-result-card').style.display = 'block';
+      document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+      document.getElementById('p1-note').textContent = '';
+
+    } else {
+      const targetProb = parseInt(document.getElementById('p1-prob').value) / 100;
+      const targetN = parseInt(document.getElementById('p1-target').value);
+
+      let lo = 1, hi = 1000, found = null;
+      while (lo <= hi) {
+        const mid = Math.floor((lo + hi) / 2);
+        const {m, r} = p1GetPacks(mid);
+        const {heroTotal} = p1CalcChain(m, r, cfg);
+        if (heroTotal < 4) { lo = mid + 1; continue; }
+        if (simSynth(heroTotal, cfg.sc, targetN, TRIALS_MAIN) >= targetProb) { found = mid; hi = mid - 1; }
+        else lo = mid + 1;
+      }
+
+      if (!found) { document.getElementById('p1-status').textContent = 'Не найдено (>1000 паков)'; document.getElementById('p1-btn').disabled = false; return; }
+
+      const {m, r} = p1GetPacks(found);
+      const {enh, rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
+      const finalProb = simSynth(heroTotal, cfg.sc, targetN, TRIALS_MAIN);
+      const ev = evSynth(heroTotal, cfg.sc);
+
+      document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
+      document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
+      document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
+      document.getElementById('p1-chain-sub').textContent = `↓ синтез героических → ${cfg.label}`;
+      document.getElementById('p1-chain-wrap').style.display = 'block';
+      document.getElementById('p1-big-label').textContent = 'Нужно паков';
+      document.getElementById('p1-big-val').textContent = m + r;
+      document.getElementById('p1-big-sub').textContent = `для ≥${targetN} ${cfg.label} с вероятностью ${Math.round(targetProb * 100)}%`;
+      document.getElementById('p1-big').style.display = 'block';
+      document.getElementById('p1-r-master').textContent = m;
+      document.getElementById('p1-r-regular').textContent = r;
+      document.getElementById('p1-pack-grid').style.display = 'grid';
+      document.getElementById('p1-r-hero').textContent = heroTotal.toFixed(1);
+      document.getElementById('p1-r-final-label').textContent = cfg.label + ' EV';
+      document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
+      document.getElementById('p1-r-prob-label').textContent = 'Реальная вероятность';
+      document.getElementById('p1-r-prob').textContent = (finalProb * 100).toFixed(1) + '%';
+      document.getElementById('p1-result-card').style.display = 'block';
+      document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+      document.getElementById('p1-note').textContent = '';
     }
 
-    if (!found) { document.getElementById('p1-status').textContent='Не найдено (>1000 паков)'; document.getElementById('p1-btn').disabled=false; return; }
-
-    const {m,r} = p1GetPacks(found);
-    const {enh,rareTotal,heroTotal} = calcChain(m,r);
-    const finalProb = simSynth(heroTotal, p1Sc, targetPurple, TRIALS_MAIN);
-    const ev = evSynth(heroTotal, p1Sc);
-
-    document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
-    document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
-    document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
-    document.getElementById('p1-chain-wrap').style.display='block';
-    document.getElementById('p1-big-val').textContent = m+r;
-    document.getElementById('p1-big-sub').textContent = `для ≥${targetPurple} фиолетовых с вероятностью ${Math.round(targetProb*100)}%`;
-    document.getElementById('p1-big').style.display='block';
-    document.getElementById('p1-r-master').textContent = m;
-    document.getElementById('p1-r-regular').textContent = r;
-    document.getElementById('p1-pack-grid').style.display='grid';
-    document.getElementById('p1-r-hero').textContent = heroTotal.toFixed(1);
-    document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
-    document.getElementById('p1-r-prob').textContent = (finalProb*100).toFixed(1)+'%';
-    document.getElementById('p1-result-card').style.display='block';
-    document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
-    document.getElementById('p1-note').textContent = p1PackType==='mix'?'Смешанный режим: 1 мастер пак на каждые 5 обычных.':'';
-    document.getElementById('p1-btn').disabled=false;
+    document.getElementById('p1-btn').disabled = false;
   }, 50);
 }
 
@@ -363,27 +538,30 @@ function b1Slide(id,outId,s) { document.getElementById(outId).textContent=docume
 
 function bRun(block) {
   const cfgs = {
-    1:{chance:0.3044, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev', unit:'фиолетовых → редких'},
-    2:{chance:0.18,   tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev', unit:'героических → редких'},
-    3:{chance:b3Sc,   tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev', unit:'фиолетовых → героических'},
+    1:{chance:0.3044, withStones:false, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev'},
+    2:{chance:0.18,   withStones:true,  tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev'},
+    3:{chance:b3Sc,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev'},
   };
   if (block===3) cfgs[3].chance=b3Sc;
   const cfg=cfgs[block];
   const target=parseInt(document.getElementById(cfg.tId).value);
   const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
   const unitMap={1:'редких',2:'героических',3:'фиолетовых'};
+  const unitIn={1:'улучшенных',2:'редких',3:'героических'};
 
   document.getElementById(cfg.btnId).disabled=true;
   document.getElementById(cfg.stId).textContent='Симуляция...';
   document.getElementById(cfg.resId).style.display='none';
 
   setTimeout(()=>{
-    const found=binarySearch(0, cfg.chance, target, targetProb, TRIALS_MAIN);
-    if (!found) { document.getElementById(cfg.stId).textContent='Не найдено (>5000 карт)'; document.getElementById(cfg.btnId).disabled=false; return; }
+    const simFn = cfg.withStones ? simSynth : simSynthNoStones;
+    const evFn  = cfg.withStones ? evSynth  : evNoStones;
 
-    const finalProb=simSynth(found, cfg.chance, target, TRIALS_MAIN);
-    const ev=evSynth(found, cfg.chance);
-    const unitIn={1:'улучшенных',2:'редких',3:'героических'}[block];
+    const found = binarySearchFn(simFn, cfg.chance, target, targetProb, TRIALS_MAIN);
+    if (!found) { document.getElementById(cfg.stId).textContent='Не найдено (>10000 карт)'; document.getElementById(cfg.btnId).disabled=false; return; }
+
+    const finalProb=simFn(found, cfg.chance, target, TRIALS_MAIN);
+    const ev=evFn(found, cfg.chance);
 
     document.getElementById(cfg.labelId).textContent=`для ≥${target} ${unitMap[block]} при ${Math.round(targetProb*100)}%`;
     document.getElementById(cfg.valId).textContent=found.toLocaleString();
@@ -392,6 +570,45 @@ function bRun(block) {
     document.getElementById(cfg.resId).style.display='flex';
     document.getElementById(cfg.stId).textContent=`Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
     document.getElementById(cfg.btnId).disabled=false;
+  }, 50);
+}
+
+// ===== КАЛЬКУЛЯТОР 3: АГАТИОНЫ =====
+function aSlide(id, outId, s) { document.getElementById(outId).textContent = document.getElementById(id).value + s; }
+
+function aRun(block) {
+  const cfgs = {
+    1: { chance: 0.25, withStones: false, tId: 'a1-target', pId: 'a1-prob', btnId: 'a1-btn', stId: 'a1-st', resId: 'a1-res', labelId: 'a1-label', valId: 'a1-val', probId: 'a1-prob-out', evId: 'a1-ev', unitIn: 'улучшенных', unitOut: 'редких' },
+    2: { chance: 0.12, withStones: true,  tId: 'a2-target', pId: 'a2-prob', btnId: 'a2-btn', stId: 'a2-st', resId: 'a2-res', labelId: 'a2-label', valId: 'a2-val', probId: 'a2-prob-out', evId: 'a2-ev', unitIn: 'редких',     unitOut: 'героических' },
+    3: { chance: 0.09, withStones: true,  tId: 'a3-target', pId: 'a3-prob', btnId: 'a3-btn', stId: 'a3-st', resId: 'a3-res', labelId: 'a3-label', valId: 'a3-val', probId: 'a3-prob-out', evId: 'a3-ev', unitIn: 'героических', unitOut: 'легендарных' },
+  };
+
+  const cfg = cfgs[block];
+  const target = parseInt(document.getElementById(cfg.tId).value);
+  const targetProb = parseInt(document.getElementById(cfg.pId).value) / 100;
+
+  document.getElementById(cfg.btnId).disabled = true;
+  document.getElementById(cfg.stId).textContent = 'Симуляция...';
+  document.getElementById(cfg.resId).style.display = 'none';
+
+  setTimeout(() => {
+    const simFn = cfg.withStones ? simSynth : simSynthNoStones;
+    const evFn  = cfg.withStones ? evSynth  : evNoStones;
+    const found = binarySearchFn(simFn, cfg.chance, target, targetProb, TRIALS_MAIN);
+    if (!found) {
+      document.getElementById(cfg.stId).textContent = 'Не найдено (> 10 000 карт)';
+      document.getElementById(cfg.btnId).disabled = false;
+      return;
+    }
+    const finalProb = simFn(found, cfg.chance, target, TRIALS_MAIN);
+    const ev = evFn(found, cfg.chance);
+    document.getElementById(cfg.labelId).textContent = `для ≥${target} ${cfg.unitOut} при ${Math.round(targetProb*100)}%`;
+    document.getElementById(cfg.valId).textContent = found.toLocaleString();
+    document.getElementById(cfg.probId).textContent = `Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
+    document.getElementById(cfg.evId).textContent = `EV: ${ev.toFixed(2)} ${cfg.unitOut}`;
+    document.getElementById(cfg.resId).style.display = 'flex';
+    document.getElementById(cfg.stId).textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+    document.getElementById(cfg.btnId).disabled = false;
   }, 50);
 }
 </script>
