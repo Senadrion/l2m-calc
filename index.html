@@ -181,19 +181,19 @@
     <div class="sec-title" style="margin-bottom:.75rem">Сценарии</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
       <div class="pack-card" style="border-left:2px solid #E24B4A;border-radius:0 var(--radius-sm) var(--radius-sm) 0">
-        <div class="pack-label">Плохой сценарий (25%)</div>
+        <div class="pack-label">≥ 25%</div>
         <div class="pack-val" id="p1-s25">—</div>
       </div>
       <div class="pack-card" style="border-left:2px solid var(--amber);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
-        <div class="pack-label">Типичный (50%)</div>
+        <div class="pack-label">≥ 50%</div>
         <div class="pack-val" id="p1-s50">—</div>
       </div>
       <div class="pack-card" style="border-left:2px solid var(--green);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
-        <div class="pack-label">Хороший (75%)</div>
+        <div class="pack-label">≥ 75%</div>
         <div class="pack-val" id="p1-s75">—</div>
       </div>
       <div class="pack-card" style="border-left:2px solid var(--blue);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
-        <div class="pack-label">Почти гарантировано (99%)</div>
+        <div class="pack-label">≥ 99%</div>
         <div class="pack-val" id="p1-s99">—</div>
       </div>
     </div>
@@ -562,7 +562,7 @@ function p1Run() {
 
         results.sort((a, b) => a - b);
         const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
-        const s25 = p(25), s50 = p(50), s75 = p(75), s99 = p(99);
+        const s25 = p(75), s50 = p(50), s75 = p(25), s99 = p(1);
         const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
         const freq = {};
         results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
