@@ -350,6 +350,8 @@ const TRIALS_MAIN = 40000;
 function switchTab(i) {
   document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
   document.querySelectorAll('.page').forEach((p,j) => p.classList.toggle('active', i===j));
+  document.querySelectorAll('.run-btn').forEach(btn => btn.disabled = false);
+  document.querySelectorAll('.status').forEach(el => el.textContent = '');
 }
 
 // ===== ОБЩИЕ УТИЛИТЫ =====
