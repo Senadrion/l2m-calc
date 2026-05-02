@@ -228,11 +228,7 @@
 
   <div class="block">
     <div class="block-title">Героические → Легендарные</div>
-    <div class="block-sub">Синтез: 4 героических. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 легендарная (100%).</div>
-    <div class="tog" id="b3-tog">
-      <button class="tb" onclick="b3SetSc(0.09,this)">9%</button>
-      <button class="tb on" onclick="b3SetSc(0.11,this)">11%</button>
-    </div>
+    <div class="block-sub">Синтез: 4 героических, шанс 11%. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 легендарная (100%).</div>
     <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="b1Slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
     <div class="row"><label>Вероятность</label><input type="range" id="b3-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b3-prob','b3-pv','%')"><span class="v" id="b3-pv">90%</span></div>
     <button class="run-btn" id="b3-btn" onclick="bRun(3)">Рассчитать</button>
@@ -532,17 +528,14 @@ function p1Run() {
 }
 
 // ===== КАЛЬКУЛЯТОР 2: СКОЛЬКО КАРТ =====
-let b3Sc = 0.11;
-function b3SetSc(v,btn) { b3Sc=v; document.querySelectorAll('#b3-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
 function b1Slide(id,outId,s) { document.getElementById(outId).textContent=document.getElementById(id).value+s; }
 
 function bRun(block) {
   const cfgs = {
     1:{chance:0.3044, withStones:false, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev'},
     2:{chance:0.18,   withStones:true,  tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev'},
-    3:{chance:b3Sc,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev'},
+    3:{chance:0.11,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev'},
   };
-  if (block===3) cfgs[3].chance=b3Sc;
   const cfg=cfgs[block];
   const target=parseInt(document.getElementById(cfg.tId).value);
   const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
