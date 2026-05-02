@@ -163,17 +163,6 @@
   </div>
   <button class="run-btn" id="p1-btn" onclick="p1Run()">Рассчитать</button>
   <div class="status" id="p1-status"></div>
-  <div id="p1-chain-wrap" style="display:none">
-    <div class="sec-title" style="margin-bottom:.6rem">Цепочка синтеза (EV)</div>
-    <div class="chain">
-      <div class="chain-card"><div class="chain-label">Улучшенных</div><div class="chain-val" id="p1-c-enh">—</div></div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-card"><div class="chain-label">Редких</div><div class="chain-val" id="p1-c-rare">—</div></div>
-      <div class="chain-arrow">→</div>
-      <div class="chain-card"><div class="chain-label">Героических</div><div class="chain-val" id="p1-c-hero">—</div></div>
-    </div>
-    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:.75rem" id="p1-chain-sub">↓ синтез героических → итог</div>
-  </div>
   <div class="big-result" id="p1-big" style="display:none">
     <div class="big-label" id="p1-big-label">Нужно паков</div>
     <div class="big-val" id="p1-big-val">—</div>
@@ -427,7 +416,7 @@ function calcChain(m, r) {
   const attEnh = synthsEnh / (3 + 0.3044);
   const rareFromEnh = attEnh * 0.3044;
   const rareTotal = rareFromPacks + rareFromEnh;
-  const heroFromRare = Math.floor(rareTotal/4)*0.18;
+  const heroFromRare = evSynth(rareTotal, 0.18);
   return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
 }
 
@@ -469,7 +458,7 @@ function p1SetPack(t, btn) {
   document.getElementById('p1-prob-sec').style.display = isMix ? 'none' : 'block';
   document.getElementById('p1-target-sec').style.display = isMix ? 'none' : 'block';
   document.getElementById('p1-btn').textContent = isMix ? 'Рассчитать из этих паков' : 'Найти минимум паков';
-  ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap','p1-prob-table-wrap','p1-scenarios'].forEach(id => document.getElementById(id).style.display='none');
+  ['p1-big','p1-pack-grid','p1-result-card','p1-prob-table-wrap','p1-scenarios'].forEach(id => document.getElementById(id).style.display='none');
 }
 
 function p1MixSlide() {
@@ -494,7 +483,7 @@ function p1CalcChain(m, r, cfg) {
   const attEnh = synthsEnh / (3 + cfg.e2r);
   const rareFromEnh = attEnh * cfg.e2r;
   const rareTotal = rareFromPacks + rareFromEnh;
-  const heroFromRare = Math.floor(rareTotal / 4) * cfg.r2h;
+  const heroFromRare = evSynth(rareTotal, cfg.r2h);
   return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
 }
 
@@ -539,8 +528,7 @@ function p1Run() {
       document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
       document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
       document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
-      document.getElementById('p1-chain-sub').textContent = `↓ синтез героических → ${cfg.label}`;
-      document.getElementById('p1-chain-wrap').style.display = 'block';
+      document.getElementById().style.display = 'block';
       document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
       document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
       document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
