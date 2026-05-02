@@ -101,6 +101,8 @@
   .res-unit { font-size: 12px; color: var(--text2); margin-top: 1px; }
   .res-prob { font-size: 12px; color: var(--text2); margin-top: 2px; }
   .res-ev { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .res-pity { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  .res-pity b { color: var(--text2); font-weight: 500; }
 
   @media (max-width: 600px) {
     .page { padding: 1rem; }
@@ -151,15 +153,18 @@
     <div class="row"><label>Мастер паков</label><input type="range" id="p1-mix-m" min="0" max="50" value="6" step="1" oninput="p1MixSlide()"><span class="v" id="p1-mix-mv">6</span></div>
     <div class="row"><label>Обычных паков</label><input type="range" id="p1-mix-r" min="0" max="500" value="30" step="1" oninput="p1MixSlide()"><span class="v" id="p1-mix-rv">30</span></div>
   </div>
-  <div class="sec" id="p1-prob-sec">
+  
+  <!-- Скрыт блок вероятности, так как теперь 99% зашито под капотом для режимов мастера и обычных -->
+  <div class="sec" id="p1-prob-sec" style="display:none;">
     <div class="sec-title">Желаемая вероятность</div>
     <div class="row"><label>Вероятность</label><input type="range" id="p1-prob" min="50" max="99" value="90" step="1" oninput="p1Slide('p1-prob','p1-prob-v','%')"><span class="v" id="p1-prob-v">90%</span></div>
   </div>
+
   <div class="sec" id="p1-target-sec">
     <div class="sec-title" id="p1-target-title">Цель: карт класса</div>
     <div class="row"><label>Количество</label><input type="range" id="p1-target" min="1" max="15" value="1" step="1" oninput="p1Slide('p1-target','p1-target-v','')"><span class="v" id="p1-target-v">1</span></div>
   </div>
-  <button class="run-btn" id="p1-btn" onclick="p1Run()">Рассчитать</button>
+  <button class="run-btn" id="p1-btn" onclick="p1Run()">Найти минимум паков</button>
   <div class="status" id="p1-status"></div>
   <div class="big-result" id="p1-big" style="display:none">
     <div class="big-label" id="p1-big-label">Нужно паков</div>
@@ -247,6 +252,7 @@
         <div class="res-unit">редких карт</div>
         <div class="res-prob" id="b2-prob-out"></div>
         <div class="res-ev" id="b2-ev"></div>
+        <div class="res-pity" id="b2-pity"></div>
       </div>
     </div>
   </div>
@@ -265,6 +271,7 @@
         <div class="res-unit">героических карт</div>
         <div class="res-prob" id="b3-prob-out"></div>
         <div class="res-ev" id="b3-ev"></div>
+        <div class="res-pity" id="b3-pity"></div>
       </div>
     </div>
   </div>
@@ -306,6 +313,7 @@
         <div class="res-unit">редких агатионов</div>
         <div class="res-prob" id="a2-prob-out"></div>
         <div class="res-ev" id="a2-ev"></div>
+        <div class="res-pity" id="a2-pity"></div>
       </div>
     </div>
   </div>
@@ -324,6 +332,7 @@
         <div class="res-unit">героических агатионов</div>
         <div class="res-prob" id="a3-prob-out"></div>
         <div class="res-ev" id="a3-ev"></div>
+        <div class="res-pity" id="a3-pity"></div>
       </div>
     </div>
   </div>
@@ -360,7 +369,6 @@ function simSynth(cards, chance, target, trials) {
 
 function evSynth(cards, chance) {
   if (cards < 4) return 0;
-  // Исправленная формула стоимости попытки: 3 + chance
   const att = cards / (3 + chance);
   return att*chance + (att - att*chance)/20;
 }
@@ -471,7 +479,8 @@ function p1SetPack(t, btn) {
   btn.classList.add('on');
   const isMix = t === 'mix';
   document.getElementById('p1-mix-sliders').style.display = isMix ? 'block' : 'none';
-  document.getElementById('p1-prob-sec').style.display = isMix ? 'none' : 'block';
+  // В режимах поиска паков блок вероятности больше не нужен
+  document.getElementById('p1-prob-sec').style.display = 'none'; 
   document.getElementById('p1-target-sec').style.display = isMix ? 'none' : 'block';
   document.getElementById('p1-btn').textContent = isMix ? 'Рассчитать из этих паков' : 'Найти минимум паков';
   ['p1-big','p1-pack-grid','p1-result-card','p1-prob-table-wrap','p1-scenarios'].forEach(id => document.getElementById(id).style.display='none');
@@ -501,73 +510,14 @@ function p1Run() {
   ['p1-big','p1-pack-grid','p1-result-card','p1-scenarios','p1-prob-table-wrap'].forEach(id => document.getElementById(id).style.display='none');
 
   setTimeout(() => {
+    let m_final, r_final;
+    let targetN = parseInt(document.getElementById('p1-target').value);
 
-    if (p1PackType === 'mix') {
-      const m = parseInt(document.getElementById('p1-mix-m').value);
-      const r = parseInt(document.getElementById('p1-mix-r').value);
-      const {enh, rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
-      const inputCards = isLegendary ? Math.round(heroTotal) : Math.round(rareTotal);
-
-      if (inputCards < 4) {
-        document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
-        document.getElementById('p1-big-val').textContent = '0';
-        document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков — недостаточно карт для синтеза`;
-        document.getElementById('p1-big').style.display = 'block';
-        document.getElementById('p1-status').textContent = '';
-        document.getElementById('p1-btn').disabled = false;
-        return;
-      }
-
-      const TRIALS_FULL = 20000;
-      const CHUNK = 2000;
-      const results = [];
-
-      function runChunk() {
-        const end = Math.min(results.length + CHUNK, TRIALS_FULL);
-        while (results.length < end) {
-          let c = inputCards, out = 0, st = 0;
-          while (c >= 4) { c -= 4; if (Math.random() < finalChance) out++; else { st++; c++; } }
-          out += Math.floor(st / 20);
-          results.push(out);
-        }
-        if (results.length < TRIALS_FULL) {
-          document.getElementById('p1-status').textContent = `Считаем... ${Math.round(results.length/TRIALS_FULL*100)}%`;
-          setTimeout(runChunk, 0);
-          return;
-        }
-
-        results.sort((a, b) => a - b);
-        const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
-        // Исправленные индексы перцентилей:
-        const s25 = p(75), s50 = p(50), s75 = p(25), s99 = p(1);
-        const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
-
-        document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
-        document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
-        document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
-        document.getElementById('p1-big').style.display = 'block';
-        document.getElementById('p1-r-master').textContent = m;
-        document.getElementById('p1-r-regular').textContent = r;
-        document.getElementById('p1-pack-grid').style.display = 'grid';
-        document.getElementById('p1-s25').textContent = s25;
-        document.getElementById('p1-s50').textContent = s50;
-        document.getElementById('p1-s75').textContent = s75;
-        document.getElementById('p1-s99').textContent = s99;
-        document.getElementById('p1-scenarios').style.display = 'block';
-        buildProbTable(results, TRIALS_FULL, 'p1');
-        document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
-        document.getElementById('p1-note').textContent = '';
-        document.getElementById('p1-btn').disabled = false;
-      }
-
-      runChunk();
-      return;
-
-    } else {
-      const targetProb = parseInt(document.getElementById('p1-prob').value) / 100;
-      const targetN = parseInt(document.getElementById('p1-target').value);
-
-      let lo = 1, hi = 1000, found = null;
+    // Если не mix, сначала находим нужное количество паков для 99% гаранта
+    if (p1PackType !== 'mix') {
+      const targetProb = 0.99; // Жестко фиксируем 99%
+      let lo = 1, hi = 2000, found = null;
+      
       while (lo <= hi) {
         const mid = Math.floor((lo + hi) / 2);
         const {m, r} = p1GetPacks(mid);
@@ -578,30 +528,86 @@ function p1Run() {
         else lo = mid + 1;
       }
 
-      if (!found) { document.getElementById('p1-status').textContent = 'Не найдено (>1000 паков)'; document.getElementById('p1-btn').disabled = false; return; }
+      if (!found) { 
+          document.getElementById('p1-status').textContent = 'Не найдено (>2000 паков)'; 
+          document.getElementById('p1-btn').disabled = false; 
+          return; 
+      }
+      
+      const packs = p1GetPacks(found);
+      m_final = packs.m;
+      r_final = packs.r;
+    } else {
+      // Режим mix - берем паки с ползунков
+      m_final = parseInt(document.getElementById('p1-mix-m').value);
+      r_final = parseInt(document.getElementById('p1-mix-r').value);
+    }
 
-      const {m, r} = p1GetPacks(found);
-      const {rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
-      const inputCards = isLegendary ? heroTotal : rareTotal;
-      const finalProb = simSynth(inputCards, finalChance, targetN, TRIALS_MAIN);
-      const evVal = isLegendary ? evSynth(heroTotal, cfg.sc) : evSynth(rareTotal, cfg.r2h);
+    // Дальше логика единая для всех режимов: симулируем найденные (или заданные) паки
+    const {enh, rareTotal, heroTotal} = p1CalcChain(m_final, r_final, cfg);
+    const inputCards = isLegendary ? Math.round(heroTotal) : Math.round(rareTotal);
 
-      document.getElementById('p1-big-label').textContent = 'Нужно паков';
-      document.getElementById('p1-big-val').textContent = m + r;
-      document.getElementById('p1-big-sub').textContent = `для ≥${targetN} ${finalLabel} с вероятностью ${Math.round(targetProb * 100)}%`;
+    if (inputCards < 4) {
+      document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
+      document.getElementById('p1-big-val').textContent = '0';
+      document.getElementById('p1-big-sub').textContent = `из ${m_final} мастер + ${r_final} обычных паков — недостаточно карт для синтеза`;
       document.getElementById('p1-big').style.display = 'block';
-      document.getElementById('p1-r-master').textContent = m;
-      document.getElementById('p1-r-regular').textContent = r;
+      document.getElementById('p1-status').textContent = '';
+      document.getElementById('p1-btn').disabled = false;
+      return;
+    }
+
+    const TRIALS_FULL = 20000;
+    const CHUNK = 2000;
+    const results = [];
+
+    function runChunk() {
+      const end = Math.min(results.length + CHUNK, TRIALS_FULL);
+      while (results.length < end) {
+        let c = inputCards, out = 0, st = 0;
+        while (c >= 4) { c -= 4; if (Math.random() < finalChance) out++; else { st++; c++; } }
+        out += Math.floor(st / 20);
+        results.push(out);
+      }
+      if (results.length < TRIALS_FULL) {
+        document.getElementById('p1-status').textContent = `Считаем... ${Math.round(results.length/TRIALS_FULL*100)}%`;
+        setTimeout(runChunk, 0);
+        return;
+      }
+
+      results.sort((a, b) => a - b);
+      const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
+      // Исправленные индексы перцентилей:
+      const s25 = p(75), s50 = p(50), s75 = p(25), s99 = p(1);
+      const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
+
+      // Отрисовка
+      if(p1PackType === 'mix') {
+         document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
+         document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
+         document.getElementById('p1-big-sub').textContent = `из ${m_final} мастер + ${r_final} обычных паков`;
+      } else {
+         document.getElementById('p1-big-label').textContent = 'Нужно паков';
+         document.getElementById('p1-big-val').textContent = m_final + r_final;
+         document.getElementById('p1-big-sub').textContent = `для ≥${targetN} ${finalLabel} (почти гарантировано, 99%)`;
+      }
+
+      document.getElementById('p1-big').style.display = 'block';
+      document.getElementById('p1-r-master').textContent = m_final;
+      document.getElementById('p1-r-regular').textContent = r_final;
       document.getElementById('p1-pack-grid').style.display = 'grid';
-      document.getElementById('p1-r-final-label').textContent = finalLabel + ' EV';
-      document.getElementById('p1-r-ev').textContent = evVal.toFixed(2);
-      document.getElementById('p1-r-prob-label').textContent = 'Реальная вероятность';
-      document.getElementById('p1-r-prob').textContent = (finalProb * 100).toFixed(1) + '%';
-      document.getElementById('p1-result-card').style.display = 'block';
-      document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+      document.getElementById('p1-s25').textContent = s25;
+      document.getElementById('p1-s50').textContent = s50;
+      document.getElementById('p1-s75').textContent = s75;
+      document.getElementById('p1-s99').textContent = s99;
+      document.getElementById('p1-scenarios').style.display = 'block';
+      buildProbTable(results, TRIALS_FULL, 'p1');
+      document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
       document.getElementById('p1-note').textContent = '';
       document.getElementById('p1-btn').disabled = false;
     }
+
+    runChunk();
 
   }, 50);
 }
@@ -612,8 +618,8 @@ function b1Slide(id,outId,s) { document.getElementById(outId).textContent=docume
 function bRun(block) {
   const cfgs = {
     1:{chance:0.3044, withStones:false, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev'},
-    2:{chance:0.18,   withStones:true,  tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev'},
-    3:{chance:0.11,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev'},
+    2:{chance:0.18,   withStones:true,  tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev', pityId:'b2-pity'},
+    3:{chance:0.11,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev', pityId:'b3-pity'},
   };
   const cfg=cfgs[block];
   const target=parseInt(document.getElementById(cfg.tId).value);
@@ -638,6 +644,12 @@ function bRun(block) {
     document.getElementById(cfg.valId).textContent=found.toLocaleString();
     document.getElementById(cfg.probId).textContent=`Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
     document.getElementById(cfg.evId).textContent=`EV: ${ev.toFixed(2)} ${unitMap[block]}`;
+    
+    if (cfg.withStones) {
+      const pityCards = target * 60 + 1;
+      document.getElementById(cfg.pityId).innerHTML = `🛡️ По гаранту (камнями): <b>${pityCards.toLocaleString()}</b>`;
+    }
+    
     document.getElementById(cfg.resId).style.display='flex';
     document.getElementById(cfg.stId).textContent=`Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
     document.getElementById(cfg.btnId).disabled=false;
@@ -649,9 +661,9 @@ function aSlide(id, outId, s) { document.getElementById(outId).textContent = doc
 
 function aRun(block) {
   const cfgs = {
-    1: { chance: 0.25, withStones: false, tId: 'a1-target', pId: 'a1-prob', btnId: 'a1-btn', stId: 'a1-st', resId: 'a1-res', labelId: 'a1-label', valId: 'a1-val', probId: 'a1-prob-out', evId: 'a1-ev', unitIn: 'улучшенных', unitOut: 'редких' },
-    2: { chance: 0.12, withStones: true,  tId: 'a2-target', pId: 'a2-prob', btnId: 'a2-btn', stId: 'a2-st', resId: 'a2-res', labelId: 'a2-label', valId: 'a2-val', probId: 'a2-prob-out', evId: 'a2-ev', unitIn: 'редких',     unitOut: 'героических' },
-    3: { chance: 0.09, withStones: true,  tId: 'a3-target', pId: 'a3-prob', btnId: 'a3-btn', stId: 'a3-st', resId: 'a3-res', labelId: 'a3-label', valId: 'a3-val', probId: 'a3-prob-out', evId: 'a3-ev', unitIn: 'героических', unitOut: 'легендарных' },
+    1: { chance: 0.25, withStones: false, tId: 'a1-target', pId: 'a1-prob', btnId: 'a1-btn', stId: 'a1-st', resId: 'a1-res', labelId: 'a1-label', valId: 'a1-val', probId: 'a1-prob-out', evId: 'a1-ev', unitOut: 'редких' },
+    2: { chance: 0.12, withStones: true,  tId: 'a2-target', pId: 'a2-prob', btnId: 'a2-btn', stId: 'a2-st', resId: 'a2-res', labelId: 'a2-label', valId: 'a2-val', probId: 'a2-prob-out', evId: 'a2-ev', pityId: 'a2-pity', unitOut: 'героических' },
+    3: { chance: 0.09, withStones: true,  tId: 'a3-target', pId: 'a3-prob', btnId: 'a3-btn', stId: 'a3-st', resId: 'a3-res', labelId: 'a3-label', valId: 'a3-val', probId: 'a3-prob-out', evId: 'a3-ev', pityId: 'a3-pity', unitOut: 'легендарных' },
   };
 
   const cfg = cfgs[block];
@@ -677,6 +689,12 @@ function aRun(block) {
     document.getElementById(cfg.valId).textContent = found.toLocaleString();
     document.getElementById(cfg.probId).textContent = `Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
     document.getElementById(cfg.evId).textContent = `EV: ${ev.toFixed(2)} ${cfg.unitOut}`;
+    
+    if (cfg.withStones) {
+      const pityCards = target * 60 + 1;
+      document.getElementById(cfg.pityId).innerHTML = `🛡️ По гаранту (камнями): <b>${pityCards.toLocaleString()}</b>`;
+    }
+    
     document.getElementById(cfg.resId).style.display = 'flex';
     document.getElementById(cfg.stId).textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
     document.getElementById(cfg.btnId).disabled = false;
