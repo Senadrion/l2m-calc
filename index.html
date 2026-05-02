@@ -157,12 +157,12 @@
   <!-- Скрыт блок вероятности, так как теперь 99% зашито под капотом для режимов мастера и обычных -->
   <div class="sec" id="p1-prob-sec" style="display:none;">
     <div class="sec-title">Желаемая вероятность</div>
-    <div class="row"><label>Вероятность</label><input type="range" id="p1-prob" min="50" max="99" value="90" step="1" oninput="p1Slide('p1-prob','p1-prob-v','%')"><span class="v" id="p1-prob-v">90%</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="p1-prob" min="50" max="99" value="90" step="1" oninput="slide('p1-prob','p1-prob-v','%')"><span class="v" id="p1-prob-v">90%</span></div>
   </div>
 
   <div class="sec" id="p1-target-sec">
     <div class="sec-title" id="p1-target-title">Цель: карт класса</div>
-    <div class="row"><label>Количество</label><input type="range" id="p1-target" min="1" max="15" value="1" step="1" oninput="p1Slide('p1-target','p1-target-v','')"><span class="v" id="p1-target-v">1</span></div>
+    <div class="row"><label>Количество</label><input type="range" id="p1-target" min="1" max="15" value="1" step="1" oninput="slide('p1-target','p1-target-v','')"><span class="v" id="p1-target-v">1</span></div>
   </div>
   <button class="run-btn" id="p1-btn" onclick="p1Run()">Найти минимум паков</button>
   <div class="status" id="p1-status"></div>
@@ -223,8 +223,8 @@
   <div class="block">
     <div class="block-title">Улучшенные → Редкие</div>
     <div class="block-sub">Синтез: 4 улучшенных, шанс 30.44%. При неудаче возвращается 1 улучшенная. Камней нет.</div>
-    <div class="row"><label>Хочу редких ≥</label><input type="range" id="b1-target" min="1" max="50" value="5" step="1" oninput="b1Slide('b1-target','b1-tv','')"><span class="v" id="b1-tv">5</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="b1-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b1-prob','b1-pv','%')"><span class="v" id="b1-pv">90%</span></div>
+    <div class="row"><label>Хочу редких ≥</label><input type="range" id="b1-target" min="1" max="50" value="5" step="1" oninput="slide('b1-target','b1-tv','')"><span class="v" id="b1-tv">5</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b1-prob" min="50" max="99" value="90" step="1" oninput="slide('b1-prob','b1-pv','%')"><span class="v" id="b1-pv">90%</span></div>
     <button class="run-btn" id="b1-btn" onclick="bRun(1)">Рассчитать</button>
     <div class="status" id="b1-st"></div>
     <div class="res" id="b1-res" style="display:none">
@@ -241,8 +241,8 @@
   <div class="block">
     <div class="block-title">Редкие → Героические</div>
     <div class="block-sub">Синтез: 4 редких, шанс 18%. При неудаче возвращается 1 редкая + 1 камень. 20 камней = 1 героическая (100%).</div>
-    <div class="row"><label>Хочу героических ≥</label><input type="range" id="b2-target" min="1" max="30" value="3" step="1" oninput="b1Slide('b2-target','b2-tv','')"><span class="v" id="b2-tv">3</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="b2-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b2-prob','b2-pv','%')"><span class="v" id="b2-pv">90%</span></div>
+    <div class="row"><label>Хочу героических ≥</label><input type="range" id="b2-target" min="1" max="30" value="3" step="1" oninput="slide('b2-target','b2-tv','')"><span class="v" id="b2-tv">3</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b2-prob" min="50" max="99" value="90" step="1" oninput="slide('b2-prob','b2-pv','%')"><span class="v" id="b2-pv">90%</span></div>
     <button class="run-btn" id="b2-btn" onclick="bRun(2)">Рассчитать</button>
     <div class="status" id="b2-st"></div>
     <div class="res" id="b2-res" style="display:none">
@@ -260,8 +260,8 @@
   <div class="block">
     <div class="block-title">Героические → Легендарные</div>
     <div class="block-sub">Синтез: 4 героических, шанс 11%. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 легендарная (100%).</div>
-    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="b1Slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="b3-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b3-prob','b3-pv','%')"><span class="v" id="b3-pv">90%</span></div>
+    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b3-prob" min="50" max="99" value="90" step="1" oninput="slide('b3-prob','b3-pv','%')"><span class="v" id="b3-pv">90%</span></div>
     <button class="run-btn" id="b3-btn" onclick="bRun(3)">Рассчитать</button>
     <div class="status" id="b3-st"></div>
     <div class="res" id="b3-res" style="display:none">
@@ -284,8 +284,8 @@
   <div class="block">
     <div class="block-title">Улучшенные → Редкие</div>
     <div class="block-sub">Синтез: 4 улучшенных, шанс 25%. При неудаче возвращается 1 улучшенный. Камней нет.</div>
-    <div class="row"><label>Хочу редких ≥</label><input type="range" id="a1-target" min="1" max="50" value="5" step="1" oninput="aSlide('a1-target','a1-tv','')"><span class="v" id="a1-tv">5</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="a1-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a1-prob','a1-pv','%')"><span class="v" id="a1-pv">90%</span></div>
+    <div class="row"><label>Хочу редких ≥</label><input type="range" id="a1-target" min="1" max="50" value="5" step="1" oninput="slide('a1-target','a1-tv','')"><span class="v" id="a1-tv">5</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a1-prob" min="50" max="99" value="90" step="1" oninput="slide('a1-prob','a1-pv','%')"><span class="v" id="a1-pv">90%</span></div>
     <button class="run-btn" id="a1-btn" onclick="aRun(1)">Рассчитать</button>
     <div class="status" id="a1-st"></div>
     <div class="res" id="a1-res" style="display:none">
@@ -302,8 +302,8 @@
   <div class="block">
     <div class="block-title">Редкие → Героические</div>
     <div class="block-sub">Синтез: 4 редких, шанс 12%. При неудаче возвращается 1 редкий + 1 камень. 20 камней = 1 героический (100%).</div>
-    <div class="row"><label>Хочу героических ≥</label><input type="range" id="a2-target" min="1" max="30" value="3" step="1" oninput="aSlide('a2-target','a2-tv','')"><span class="v" id="a2-tv">3</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="a2-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a2-prob','a2-pv','%')"><span class="v" id="a2-pv">90%</span></div>
+    <div class="row"><label>Хочу героических ≥</label><input type="range" id="a2-target" min="1" max="30" value="3" step="1" oninput="slide('a2-target','a2-tv','')"><span class="v" id="a2-tv">3</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a2-prob" min="50" max="99" value="90" step="1" oninput="slide('a2-prob','a2-pv','%')"><span class="v" id="a2-pv">90%</span></div>
     <button class="run-btn" id="a2-btn" onclick="aRun(2)">Рассчитать</button>
     <div class="status" id="a2-st"></div>
     <div class="res" id="a2-res" style="display:none">
@@ -321,8 +321,8 @@
   <div class="block">
     <div class="block-title">Героические → Легендарные</div>
     <div class="block-sub">Синтез: 4 героических, шанс 9%. При неудаче возвращается 1 героический + 1 камень. 20 камней = 1 легендарный (100%).</div>
-    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="a3-target" min="1" max="20" value="1" step="1" oninput="aSlide('a3-target','a3-tv','')"><span class="v" id="a3-tv">1</span></div>
-    <div class="row"><label>Вероятность</label><input type="range" id="a3-prob" min="50" max="99" value="90" step="1" oninput="aSlide('a3-prob','a3-pv','%')"><span class="v" id="a3-pv">90%</span></div>
+    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="a3-target" min="1" max="20" value="1" step="1" oninput="slide('a3-target','a3-tv','')"><span class="v" id="a3-tv">1</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="a3-prob" min="50" max="99" value="90" step="1" oninput="slide('a3-prob','a3-pv','%')"><span class="v" id="a3-pv">90%</span></div>
     <button class="run-btn" id="a3-btn" onclick="aRun(3)">Рассчитать</button>
     <div class="status" id="a3-st"></div>
     <div class="res" id="a3-res" style="display:none">
@@ -412,22 +412,26 @@ function buildProbTable(results, TRIALS_FULL, prefix) {
   const evRound = Math.round(evVal);
   const tbody = document.getElementById(prefix + '-prob-tbody');
   if (!tbody) return;
-  tbody.innerHTML = '';
+
+  // Строим суффиксный массив один раз — O(n) вместо O(n²)
+  const suffix = new Array(maxOut + 2).fill(0);
+  for (let k = maxOut; k >= 1; k--) suffix[k] = suffix[k + 1] + (freq[k] || 0);
+
   const showMax = Math.min(maxOut, Math.max(evRound * 2, 10));
+  let html = '';
   for (let k = 1; k <= showMax; k++) {
-    let cumK = 0;
-    for (let j = k; j <= maxOut; j++) cumK += (freq[j] || 0);
-    const pct = cumK / TRIALS_FULL * 100;
+    const pct = suffix[k] / TRIALS_FULL * 100;
     const isEv = k === evRound;
     const color = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--text)' : 'var(--text2)';
     const bg = isEv ? 'background:rgba(29,158,117,0.08)' : '';
-    let label = pct >= 99 ? 'почти гарантировано' : pct >= 75 ? 'очень вероятно' : pct >= 50 ? 'вероятно' : pct >= 25 ? 'возможно' : pct >= 10 ? 'маловероятно' : 'редко';
-    tbody.innerHTML += `<tr style="${bg}">
+    const label = pct >= 99 ? 'почти гарантировано' : pct >= 75 ? 'очень вероятно' : pct >= 50 ? 'вероятно' : pct >= 25 ? 'возможно' : pct >= 10 ? 'маловероятно' : 'редко';
+    html += `<tr style="${bg}">
       <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);color:var(--text)">≥ ${k}${isEv ? ' ← среднее' : ''}</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;font-weight:500;color:${color}">${pct.toFixed(1)}%</td>
       <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--text2);font-size:12px">${label}</td>
     </tr>`;
   }
+  tbody.innerHTML = html;
   document.getElementById(prefix + '-prob-table-wrap').style.display = 'block';
 }
 
@@ -452,10 +456,14 @@ const P1_CONFIGS = {
   agathion: { sc: 0.09, label: 'легендарных агатионов',   labelHero: 'героических агатионов',   e2r: 0.25,   r2h: 0.12 },
 };
 
+function setToggle(groupSel, btn) {
+  document.querySelectorAll(groupSel + ' .tb').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
 function p1SetGoal(g, btn) {
   p1Goal = g;
-  document.querySelectorAll('#p1-goal-tog .tb').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  setToggle('#p1-goal-tog', btn);
   p1UpdateTargetTitle();
   ['p1-big','p1-pack-grid','p1-result-card','p1-scenarios','p1-prob-table-wrap'].forEach(id => document.getElementById(id).style.display='none');
 }
@@ -468,15 +476,13 @@ function p1UpdateTargetTitle() {
 
 function p1SetType(t, btn) {
   p1Type = t;
-  document.querySelectorAll('#p1-type-tog .tb').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  setToggle('#p1-type-tog', btn);
   p1UpdateTargetTitle();
 }
 
 function p1SetPack(t, btn) {
   p1PackType = t;
-  document.querySelectorAll('#p1-pack-tog .tb').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  setToggle('#p1-pack-tog', btn);
   const isMix = t === 'mix';
   document.getElementById('p1-mix-sliders').style.display = isMix ? 'block' : 'none';
   // В режимах поиска паков блок вероятности больше не нужен
@@ -491,7 +497,7 @@ function p1MixSlide() {
   document.getElementById('p1-mix-rv').textContent = document.getElementById('p1-mix-r').value;
 }
 
-function p1Slide(id, outId, s) { document.getElementById(outId).textContent = document.getElementById(id).value + s; }
+function slide(id, outId, s) { document.getElementById(outId).textContent = document.getElementById(id).value + s; }
 
 function p1GetPacks(n) {
   if (p1PackType === 'master') return {m: n, r: 0};
@@ -612,61 +618,20 @@ function p1Run() {
   }, 50);
 }
 
-// ===== КАЛЬКУЛЯТОР 3: СКОЛЬКО КАРТ =====
-function b1Slide(id,outId,s) { document.getElementById(outId).textContent=document.getElementById(id).value+s; }
+// ===== КАЛЬКУЛЯТОР 2 и 3: общая логика =====
+const B_CFGS = {
+  1: { chance: 0.3044, withStones: false, unitOut: 'редких',       tId: 'b1-target', pId: 'b1-prob', btnId: 'b1-btn', stId: 'b1-st', resId: 'b1-res', labelId: 'b1-label', valId: 'b1-val', probId: 'b1-prob-out', evId: 'b1-ev' },
+  2: { chance: 0.18,   withStones: true,  unitOut: 'героических',  tId: 'b2-target', pId: 'b2-prob', btnId: 'b2-btn', stId: 'b2-st', resId: 'b2-res', labelId: 'b2-label', valId: 'b2-val', probId: 'b2-prob-out', evId: 'b2-ev', pityId: 'b2-pity' },
+  3: { chance: 0.11,   withStones: true,  unitOut: 'легендарных',  tId: 'b3-target', pId: 'b3-prob', btnId: 'b3-btn', stId: 'b3-st', resId: 'b3-res', labelId: 'b3-label', valId: 'b3-val', probId: 'b3-prob-out', evId: 'b3-ev', pityId: 'b3-pity' },
+};
 
-function bRun(block) {
-  const cfgs = {
-    1:{chance:0.3044, withStones:false, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev'},
-    2:{chance:0.18,   withStones:true,  tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev', pityId:'b2-pity'},
-    3:{chance:0.11,   withStones:true,  tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev', pityId:'b3-pity'},
-  };
-  const cfg=cfgs[block];
-  const target=parseInt(document.getElementById(cfg.tId).value);
-  const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
-  const unitMap={1:'редких',2:'героических',3:'легендарных'};
+const A_CFGS = {
+  1: { chance: 0.25, withStones: false, unitOut: 'редких',       tId: 'a1-target', pId: 'a1-prob', btnId: 'a1-btn', stId: 'a1-st', resId: 'a1-res', labelId: 'a1-label', valId: 'a1-val', probId: 'a1-prob-out', evId: 'a1-ev' },
+  2: { chance: 0.12, withStones: true,  unitOut: 'героических',  tId: 'a2-target', pId: 'a2-prob', btnId: 'a2-btn', stId: 'a2-st', resId: 'a2-res', labelId: 'a2-label', valId: 'a2-val', probId: 'a2-prob-out', evId: 'a2-ev', pityId: 'a2-pity' },
+  3: { chance: 0.09, withStones: true,  unitOut: 'легендарных',  tId: 'a3-target', pId: 'a3-prob', btnId: 'a3-btn', stId: 'a3-st', resId: 'a3-res', labelId: 'a3-label', valId: 'a3-val', probId: 'a3-prob-out', evId: 'a3-ev', pityId: 'a3-pity' },
+};
 
-  document.getElementById(cfg.btnId).disabled=true;
-  document.getElementById(cfg.stId).textContent='Симуляция...';
-  document.getElementById(cfg.resId).style.display='none';
-
-  setTimeout(()=>{
-    const simFn = cfg.withStones ? simSynth : simSynthNoStones;
-    const evFn  = cfg.withStones ? evSynth  : evNoStones;
-
-    const found = binarySearchFn(simFn, cfg.chance, target, targetProb, TRIALS_MAIN);
-    if (!found) { document.getElementById(cfg.stId).textContent='Не найдено (>10000 карт)'; document.getElementById(cfg.btnId).disabled=false; return; }
-
-    const finalProb=simFn(found, cfg.chance, target, TRIALS_MAIN);
-    const ev=evFn(found, cfg.chance);
-
-    document.getElementById(cfg.labelId).textContent=`для ≥${target} ${unitMap[block]} при ${Math.round(targetProb*100)}%`;
-    document.getElementById(cfg.valId).textContent=found.toLocaleString();
-    document.getElementById(cfg.probId).textContent=`Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
-    document.getElementById(cfg.evId).textContent=`EV: ${ev.toFixed(2)} ${unitMap[block]}`;
-    
-    if (cfg.withStones) {
-      const pityCards = target * 60 + 1;
-      document.getElementById(cfg.pityId).innerHTML = `🛡️ По гаранту (камнями): <b>${pityCards.toLocaleString()}</b>`;
-    }
-    
-    document.getElementById(cfg.resId).style.display='flex';
-    document.getElementById(cfg.stId).textContent=`Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
-    document.getElementById(cfg.btnId).disabled=false;
-  }, 50);
-}
-
-// ===== КАЛЬКУЛЯТОР 3: АГАТИОНЫ =====
-function aSlide(id, outId, s) { document.getElementById(outId).textContent = document.getElementById(id).value + s; }
-
-function aRun(block) {
-  const cfgs = {
-    1: { chance: 0.25, withStones: false, tId: 'a1-target', pId: 'a1-prob', btnId: 'a1-btn', stId: 'a1-st', resId: 'a1-res', labelId: 'a1-label', valId: 'a1-val', probId: 'a1-prob-out', evId: 'a1-ev', unitOut: 'редких' },
-    2: { chance: 0.12, withStones: true,  tId: 'a2-target', pId: 'a2-prob', btnId: 'a2-btn', stId: 'a2-st', resId: 'a2-res', labelId: 'a2-label', valId: 'a2-val', probId: 'a2-prob-out', evId: 'a2-ev', pityId: 'a2-pity', unitOut: 'героических' },
-    3: { chance: 0.09, withStones: true,  tId: 'a3-target', pId: 'a3-prob', btnId: 'a3-btn', stId: 'a3-st', resId: 'a3-res', labelId: 'a3-label', valId: 'a3-val', probId: 'a3-prob-out', evId: 'a3-ev', pityId: 'a3-pity', unitOut: 'легендарных' },
-  };
-
-  const cfg = cfgs[block];
+function runSynthBlock(cfg) {
   const target = parseInt(document.getElementById(cfg.tId).value);
   const targetProb = parseInt(document.getElementById(cfg.pId).value) / 100;
 
@@ -679,27 +644,28 @@ function aRun(block) {
     const evFn  = cfg.withStones ? evSynth  : evNoStones;
     const found = binarySearchFn(simFn, cfg.chance, target, targetProb, TRIALS_MAIN);
     if (!found) {
-      document.getElementById(cfg.stId).textContent = 'Не найдено (> 10 000 карт)';
+      document.getElementById(cfg.stId).textContent = 'Не найдено (>10 000 карт)';
       document.getElementById(cfg.btnId).disabled = false;
       return;
     }
     const finalProb = simFn(found, cfg.chance, target, TRIALS_MAIN);
     const ev = evFn(found, cfg.chance);
-    document.getElementById(cfg.labelId).textContent = `для ≥${target} ${cfg.unitOut} при ${Math.round(targetProb*100)}%`;
+    document.getElementById(cfg.labelId).textContent = `для ≥${target} ${cfg.unitOut} при ${Math.round(targetProb * 100)}%`;
     document.getElementById(cfg.valId).textContent = found.toLocaleString();
-    document.getElementById(cfg.probId).textContent = `Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
+    document.getElementById(cfg.probId).textContent = `Реальная вероятность: ${(finalProb * 100).toFixed(1)}%`;
     document.getElementById(cfg.evId).textContent = `EV: ${ev.toFixed(2)} ${cfg.unitOut}`;
-    
     if (cfg.withStones) {
       const pityCards = target * 60 + 1;
       document.getElementById(cfg.pityId).innerHTML = `🛡️ По гаранту (камнями): <b>${pityCards.toLocaleString()}</b>`;
     }
-    
     document.getElementById(cfg.resId).style.display = 'flex';
     document.getElementById(cfg.stId).textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
     document.getElementById(cfg.btnId).disabled = false;
   }, 50);
 }
+
+function bRun(block) { runSynthBlock(B_CFGS[block]); }
+function aRun(block) { runSynthBlock(A_CFGS[block]); }
 </script>
 </body>
 </html>
