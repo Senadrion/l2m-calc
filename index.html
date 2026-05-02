@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lineage 2M — Калькулятор синтеза</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
     --bg: #0f0f0f;
@@ -103,13 +102,8 @@
   .res-prob { font-size: 12px; color: var(--text2); margin-top: 2px; }
   .res-ev { font-size: 12px; color: var(--text3); margin-top: 2px; }
 
-  .chart-wrap { position: relative; width: 100%; height: 220px; margin-bottom: .5rem; }
 
   .prob-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: .75rem; }
-  .prob-table th { text-align: left; color: var(--text2); font-weight: 500; padding: 5px 8px; border-bottom: 0.5px solid var(--border); }
-  .prob-table td { padding: 5px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); }
-  .prob-table tr:last-child td { border-bottom: none; }
-  .prob-table td.acc { color: var(--green); font-weight: 500; }
 
   @media (max-width: 600px) {
     .page { padding: 1rem; }
@@ -131,8 +125,7 @@
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab(0)">Сколько паков нужно</div>
-  <div class="tab" onclick="switchTab(1)">Распределение вероятностей</div>
-  <div class="tab" onclick="switchTab(2)">Сколько карт нужно</div>
+  <div class="tab" onclick="switchTab(1)">Сколько карт нужно</div>
 </div>
 
 <!-- ===== КАЛЬКУЛЯТОР 1: Сколько паков ===== -->
@@ -190,37 +183,8 @@
   <div class="note" id="p1-note"></div>
 </div>
 
-<!-- ===== КАЛЬКУЛЯТОР 2: Распределение ===== -->
+<!-- ===== КАЛЬКУЛЯТОР 2: Сколько карт нужно ===== -->
 <div class="page" id="page1">
-  <div class="sec">
-    <div class="sec-title">Паки</div>
-    <div class="row"><label>Мастер паки</label><input type="range" id="p2-m" min="0" max="50" value="6" step="1" oninput="p2Slide()"><span class="v" id="p2-mv">6</span></div>
-    <div class="row"><label>Обычные паки</label><input type="range" id="p2-r" min="0" max="100" value="30" step="1" oninput="p2Slide()"><span class="v" id="p2-rv">30</span></div>
-  </div>
-  <div class="sec">
-    <div class="sec-title">Шанс синтеза (героические → фиолетовые)</div>
-    <div class="tog" id="p2-synth-tog">
-      <button class="tb" onclick="p2SetSynth(0.09,this)">9%</button>
-      <button class="tb on" onclick="p2SetSynth(0.11,this)">11%</button>
-    </div>
-  </div>
-  <div class="stat-grid">
-    <div class="stat"><div class="stat-l">Редких (EV)</div><div class="stat-v" id="p2-s-rare">0</div></div>
-    <div class="stat"><div class="stat-l">Героических (EV)</div><div class="stat-v" id="p2-s-hero">0</div></div>
-    <div class="stat"><div class="stat-l">Фиолетовых EV</div><div class="stat-v green" id="p2-s-purp">—</div></div>
-  </div>
-  <button class="run-btn" id="p2-btn" onclick="p2Run()">Запустить симуляцию (50 000 итераций)</button>
-  <div class="status" id="p2-status"></div>
-  <div class="chart-wrap"><canvas id="p2-chart" role="img" aria-label="Распределение вероятностей фиолетовых карт">Гистограмма результатов симуляции.</canvas></div>
-  <table class="prob-table" id="p2-table" style="display:none">
-    <thead><tr><th>Фиолетовых ≥</th><th>Вероятность</th><th>Накопленная</th></tr></thead>
-    <tbody id="p2-tbody"></tbody>
-  </table>
-  <div class="note" id="p2-note"></div>
-</div>
-
-<!-- ===== КАЛЬКУЛЯТОР 3: Сколько карт нужно ===== -->
-<div class="page" id="page2">
 
   <div class="block">
     <div class="block-title">Улучшенные → Редкие</div>
@@ -284,7 +248,6 @@
 
 <script>
 const TRIALS_MAIN = 40000;
-const TRIALS_DIST = 50000;
 
 // ===== ТАБЫ =====
 function switchTab(i) {
@@ -394,83 +357,7 @@ function p1Run() {
   }, 50);
 }
 
-// ===== КАЛЬКУЛЯТОР 2 =====
-let p2Sc = 0.11, p2Chart = null;
-
-function p2SetSynth(v,btn) { p2Sc=v; document.querySelectorAll('#p2-synth-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); p2UpdateStats(); }
-function p2Slide() {
-  const m = parseInt(document.getElementById('p2-m').value);
-  const r = parseInt(document.getElementById('p2-r').value);
-  document.getElementById('p2-mv').textContent = m;
-  document.getElementById('p2-rv').textContent = r;
-  p2UpdateStats();
-}
-function p2UpdateStats() {
-  const m = parseInt(document.getElementById('p2-m').value);
-  const r = parseInt(document.getElementById('p2-r').value);
-  const {rareTotal,heroTotal} = calcChain(m,r);
-  document.getElementById('p2-s-rare').textContent = rareTotal.toFixed(1);
-  document.getElementById('p2-s-hero').textContent = heroTotal.toFixed(1);
-  const ev = evSynth(heroTotal, p2Sc);
-  document.getElementById('p2-s-purp').textContent = ev>0 ? ev.toFixed(2) : '—';
-}
-
-function p2Run() {
-  const m = parseInt(document.getElementById('p2-m').value);
-  const r = parseInt(document.getElementById('p2-r').value);
-  const {heroTotal} = calcChain(m,r);
-  if (heroTotal < 4) { document.getElementById('p2-status').textContent='Недостаточно героических карт'; return; }
-  document.getElementById('p2-btn').disabled=true;
-  document.getElementById('p2-status').textContent='Симуляция...';
-
-  setTimeout(() => {
-    const h0 = Math.round(heroTotal);
-    const freq = {};
-    for (let i=0; i<TRIALS_DIST; i++) {
-      let h=h0, purple=0, stones=0;
-      while (h>=4) { h-=4; if(Math.random()<p2Sc) purple++; else {stones++; h++;} }
-      purple += Math.floor(stones/20);
-      freq[purple] = (freq[purple]||0)+1;
-    }
-    const keys = Object.keys(freq).map(Number).sort((a,b)=>a-b);
-    const maxP = keys[keys.length-1];
-    const labels=[], data=[];
-    for (let k=0; k<=maxP; k++) { labels.push(k); data.push((freq[k]||0)/TRIALS_DIST*100); }
-
-    if (p2Chart) p2Chart.destroy();
-    p2Chart = new Chart(document.getElementById('p2-chart'), {
-      type:'bar',
-      data:{ labels, datasets:[{ label:'%', data, backgroundColor:'#1D9E75', borderRadius:3, borderSkipped:false }] },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:ctx=>`${ctx[0].label} фиолетовых`, label:ctx=>`${ctx.raw.toFixed(1)}% случаев` } } },
-        scales:{
-          x:{ title:{display:true,text:'Количество фиолетовых',color:'#888',font:{size:11}}, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#888',font:{size:11}} },
-          y:{ title:{display:true,text:'% случаев',color:'#888',font:{size:11}}, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#888',font:{size:11},callback:v=>v.toFixed(0)+'%'} }
-        }
-      }
-    });
-
-    const tbody = document.getElementById('p2-tbody');
-    tbody.innerHTML='';
-    let cum=0;
-    const rows=[];
-    for (let k=maxP; k>=0; k--) { cum+=((freq[k]||0)/TRIALS_DIST*100); rows.push({k,cum:Math.min(cum,100)}); }
-    rows.reverse().forEach(t=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML=`<td>≥ ${t.k}</td><td>${data[t.k]?data[t.k].toFixed(1)+'%':'0%'}</td><td class="acc">${t.cum.toFixed(1)}%</td>`;
-      tbody.appendChild(tr);
-    });
-    document.getElementById('p2-table').style.display='table';
-    document.getElementById('p2-status').textContent=`Готово (${TRIALS_DIST.toLocaleString()} итераций)`;
-    document.getElementById('p2-note').textContent=`Героических в расчёте: ${h0}`;
-    document.getElementById('p2-btn').disabled=false;
-  }, 50);
-}
-
-p2UpdateStats();
-
-// ===== КАЛЬКУЛЯТОР 3 =====
+// ===== КАЛЬКУЛЯТОР 2: СКОЛЬКО КАРТ =====
 let b3Sc = 0.11;
 function b3SetSc(v,btn) { b3Sc=v; document.querySelectorAll('#b3-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
 function b1Slide(id,outId,s) { document.getElementById(outId).textContent=document.getElementById(id).value+s; }
