@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lineage 2M — Калькулятор синтеза</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --bg2: #1a1a1a;
+    --bg3: #222;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.18);
+    --text: #f0f0f0;
+    --text2: #999;
+    --text3: #666;
+    --green: #1D9E75;
+    --blue: #378ADD;
+    --amber: #EF9F27;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  header { border-bottom: 0.5px solid var(--border); padding: 1.25rem 2rem; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 18px; font-weight: 500; }
+  header span { font-size: 13px; color: var(--text2); }
+
+  .tabs { display: flex; gap: 0; border-bottom: 0.5px solid var(--border); padding: 0 2rem; }
+  .tab { padding: 12px 20px; font-size: 14px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s; }
+  .tab.active { color: var(--text); border-bottom-color: var(--green); }
+  .tab:hover { color: var(--text); }
+
+  .page { display: none; max-width: 720px; margin: 0 auto; padding: 2rem; }
+  .page.active { display: block; }
+
+  .sec { margin-bottom: 1.5rem; }
+  .sec-title { font-size: 11px; font-weight: 500; color: var(--text2); letter-spacing: .07em; text-transform: uppercase; margin-bottom: .6rem; }
+
+  .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .row label { font-size: 14px; color: var(--text2); width: 180px; flex-shrink: 0; }
+  .row input[type=range] { flex: 1; -webkit-appearance: none; height: 4px; background: var(--bg3); border-radius: 2px; outline: none; cursor: pointer; }
+  .row input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--green); cursor: pointer; }
+  .row .v { font-size: 14px; font-weight: 500; width: 40px; text-align: right; color: var(--text); }
+
+  .tog { display: flex; gap: 6px; margin-bottom: 1rem; }
+  .tb { flex: 1; padding: 6px 0; font-size: 13px; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: transparent; color: var(--text2); cursor: pointer; transition: background .15s; }
+  .tb.on { background: var(--bg3); color: var(--text); font-weight: 500; border-color: rgba(255,255,255,0.3); }
+  .tb:hover { background: var(--bg3); }
+
+  hr { border: none; border-top: 0.5px solid var(--border); margin: 1.25rem 0; }
+
+  .run-btn { width: 100%; padding: 10px; font-size: 14px; font-weight: 500; border: 0.5px solid var(--border2); border-radius: var(--radius-sm); background: transparent; color: var(--text); cursor: pointer; margin-bottom: 1rem; transition: background .15s; }
+  .run-btn:hover { background: var(--bg3); }
+  .run-btn:disabled { opacity: .4; cursor: default; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 1rem; }
+  .stat { background: var(--bg2); border-radius: var(--radius-sm); padding: 10px 8px; text-align: center; }
+  .stat-l { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-v { font-size: 18px; font-weight: 500; color: var(--text); }
+  .stat-v.green { color: var(--green); }
+
+  .chain { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 6px; align-items: center; margin-bottom: .75rem; }
+  .chain-card { background: var(--bg2); border-radius: var(--radius-sm); padding: 8px 6px; text-align: center; }
+  .chain-label { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+  .chain-val { font-size: 15px; font-weight: 500; color: var(--text); }
+  .chain-arrow { text-align: center; color: var(--text3); font-size: 16px; }
+
+  .big-result { text-align: center; padding: 1.5rem; background: var(--bg2); border-radius: var(--radius); margin-bottom: 1rem; }
+  .big-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; }
+  .big-val { font-size: 40px; font-weight: 500; color: var(--green); }
+  .big-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  .pack-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 1rem; }
+  .pack-card { background: var(--bg2); border-radius: var(--radius-sm); padding: 12px; text-align: center; }
+  .pack-label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .pack-val { font-size: 24px; font-weight: 500; color: var(--text); }
+
+  .result-card { background: var(--bg2); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-bottom: 0.5px solid var(--border); }
+  .result-row:last-child { border-bottom: none; }
+  .result-label { font-size: 13px; color: var(--text2); }
+  .result-val { font-size: 15px; font-weight: 500; color: var(--text); }
+  .result-val.green { color: var(--green); }
+
+  .status { font-size: 12px; color: var(--text2); text-align: center; min-height: 16px; margin-bottom: .5rem; }
+  .note { font-size: 12px; color: var(--text3); margin-top: .5rem; }
+
+  /* Калькулятор 2 */
+  .block { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+  .block-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .block-sub { font-size: 11px; color: var(--text3); margin-bottom: .75rem; }
+  .res { display: flex; justify-content: space-between; align-items: center; margin-top: .75rem; padding-top: .75rem; border-top: 0.5px solid var(--border); }
+  .res-left { font-size: 12px; color: var(--text2); }
+  .res-right { text-align: right; }
+  .res-val { font-size: 24px; font-weight: 500; }
+  .res-val.rare { color: var(--blue); }
+  .res-val.heroic { color: var(--amber); }
+  .res-val.purple { color: var(--green); }
+  .res-unit { font-size: 12px; color: var(--text2); margin-top: 1px; }
+  .res-prob { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .res-ev { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  .chart-wrap { position: relative; width: 100%; height: 220px; margin-bottom: .5rem; }
+
+  .prob-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: .75rem; }
+  .prob-table th { text-align: left; color: var(--text2); font-weight: 500; padding: 5px 8px; border-bottom: 0.5px solid var(--border); }
+  .prob-table td { padding: 5px 8px; border-bottom: 0.5px solid var(--border); color: var(--text); }
+  .prob-table tr:last-child td { border-bottom: none; }
+  .prob-table td.acc { color: var(--green); font-weight: 500; }
+
+  @media (max-width: 600px) {
+    .page { padding: 1rem; }
+    .row label { width: 120px; font-size: 13px; }
+    .chain { grid-template-columns: 1fr auto 1fr auto 1fr; }
+    header { padding: 1rem; }
+    .tabs { padding: 0 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Lineage 2M — Калькулятор синтеза</h1>
+    <span>Вероятности и расчёт карт</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0)">Сколько паков нужно</div>
+  <div class="tab" onclick="switchTab(1)">Распределение вероятностей</div>
+  <div class="tab" onclick="switchTab(2)">Сколько карт нужно</div>
+</div>
+
+<!-- ===== КАЛЬКУЛЯТОР 1: Сколько паков ===== -->
+<div class="page active" id="page0">
+  <div class="sec">
+    <div class="sec-title">Тип паков</div>
+    <div class="tog" id="p1-pack-tog">
+      <button class="tb on" onclick="p1SetPack('master',this)">Только мастер</button>
+      <button class="tb" onclick="p1SetPack('regular',this)">Только обычные</button>
+      <button class="tb" onclick="p1SetPack('mix',this)">Смешанные (1:5)</button>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Шанс синтеза (героические → фиолетовые)</div>
+    <div class="tog" id="p1-synth-tog">
+      <button class="tb" onclick="p1SetSynth(0.09,this)">9%</button>
+      <button class="tb on" onclick="p1SetSynth(0.11,this)">11%</button>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Желаемая вероятность</div>
+    <div class="row"><label>Вероятность</label><input type="range" id="p1-prob" min="50" max="99" value="90" step="1" oninput="p1Slide('p1-prob','p1-prob-v','%')"><span class="v" id="p1-prob-v">90%</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Цель: фиолетовых карт</div>
+    <div class="row"><label>Количество</label><input type="range" id="p1-target" min="1" max="15" value="1" step="1" oninput="p1Slide('p1-target','p1-target-v','')"><span class="v" id="p1-target-v">1</span></div>
+  </div>
+  <button class="run-btn" id="p1-btn" onclick="p1Run()">Найти минимум паков</button>
+  <div class="status" id="p1-status"></div>
+  <div id="p1-chain-wrap" style="display:none">
+    <div class="sec-title" style="margin-bottom:.6rem">Цепочка синтеза (EV)</div>
+    <div class="chain">
+      <div class="chain-card"><div class="chain-label">Улучшенных</div><div class="chain-val" id="p1-c-enh">—</div></div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-card"><div class="chain-label">Редких</div><div class="chain-val" id="p1-c-rare">—</div></div>
+      <div class="chain-arrow">→</div>
+      <div class="chain-card"><div class="chain-label">Героических</div><div class="chain-val" id="p1-c-hero">—</div></div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--text3);margin-bottom:.75rem">↓ синтез героических → фиолетовые</div>
+  </div>
+  <div class="big-result" id="p1-big" style="display:none">
+    <div class="big-label">Нужно паков</div>
+    <div class="big-val" id="p1-big-val">—</div>
+    <div class="big-sub" id="p1-big-sub"></div>
+  </div>
+  <div class="pack-grid" id="p1-pack-grid" style="display:none">
+    <div class="pack-card"><div class="pack-label">Мастер паков</div><div class="pack-val" id="p1-r-master">—</div></div>
+    <div class="pack-card"><div class="pack-label">Обычных паков</div><div class="pack-val" id="p1-r-regular">—</div></div>
+  </div>
+  <div class="result-card" id="p1-result-card" style="display:none">
+    <div class="result-row"><span class="result-label">Героических карт (EV)</span><span class="result-val" id="p1-r-hero">—</span></div>
+    <div class="result-row"><span class="result-label">Фиолетовых EV</span><span class="result-val" id="p1-r-ev">—</span></div>
+    <div class="result-row"><span class="result-label">Реальная вероятность</span><span class="result-val green" id="p1-r-prob">—</span></div>
+  </div>
+  <div class="note" id="p1-note"></div>
+</div>
+
+<!-- ===== КАЛЬКУЛЯТОР 2: Распределение ===== -->
+<div class="page" id="page1">
+  <div class="sec">
+    <div class="sec-title">Паки</div>
+    <div class="row"><label>Мастер паки</label><input type="range" id="p2-m" min="0" max="50" value="6" step="1" oninput="p2Slide()"><span class="v" id="p2-mv">6</span></div>
+    <div class="row"><label>Обычные паки</label><input type="range" id="p2-r" min="0" max="100" value="30" step="1" oninput="p2Slide()"><span class="v" id="p2-rv">30</span></div>
+  </div>
+  <div class="sec">
+    <div class="sec-title">Шанс синтеза (героические → фиолетовые)</div>
+    <div class="tog" id="p2-synth-tog">
+      <button class="tb" onclick="p2SetSynth(0.09,this)">9%</button>
+      <button class="tb on" onclick="p2SetSynth(0.11,this)">11%</button>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat"><div class="stat-l">Редких (EV)</div><div class="stat-v" id="p2-s-rare">0</div></div>
+    <div class="stat"><div class="stat-l">Героических (EV)</div><div class="stat-v" id="p2-s-hero">0</div></div>
+    <div class="stat"><div class="stat-l">Фиолетовых EV</div><div class="stat-v green" id="p2-s-purp">—</div></div>
+  </div>
+  <button class="run-btn" id="p2-btn" onclick="p2Run()">Запустить симуляцию (50 000 итераций)</button>
+  <div class="status" id="p2-status"></div>
+  <div class="chart-wrap"><canvas id="p2-chart" role="img" aria-label="Распределение вероятностей фиолетовых карт">Гистограмма результатов симуляции.</canvas></div>
+  <table class="prob-table" id="p2-table" style="display:none">
+    <thead><tr><th>Фиолетовых ≥</th><th>Вероятность</th><th>Накопленная</th></tr></thead>
+    <tbody id="p2-tbody"></tbody>
+  </table>
+  <div class="note" id="p2-note"></div>
+</div>
+
+<!-- ===== КАЛЬКУЛЯТОР 3: Сколько карт нужно ===== -->
+<div class="page" id="page2">
+
+  <div class="block">
+    <div class="block-title">Улучшенные → Редкие</div>
+    <div class="block-sub">Синтез: 4 улучшенных, шанс 30.44%. При неудаче возвращается 1 улучшенная + 1 камень. 20 камней = 1 редкая (100%).</div>
+    <div class="row"><label>Хочу редких ≥</label><input type="range" id="b1-target" min="1" max="50" value="5" step="1" oninput="b1Slide('b1-target','b1-tv','')"><span class="v" id="b1-tv">5</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b1-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b1-prob','b1-pv','%')"><span class="v" id="b1-pv">90%</span></div>
+    <button class="run-btn" id="b1-btn" onclick="bRun(1)">Рассчитать</button>
+    <div class="status" id="b1-st"></div>
+    <div class="res" id="b1-res" style="display:none">
+      <div class="res-left" id="b1-label"></div>
+      <div class="res-right">
+        <div class="res-val rare" id="b1-val">—</div>
+        <div class="res-unit">улучшенных карт</div>
+        <div class="res-prob" id="b1-prob-out"></div>
+        <div class="res-ev" id="b1-ev"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Редкие → Героические</div>
+    <div class="block-sub">Синтез: 4 редких, шанс 18%. При неудаче возвращается 1 редкая + 1 камень. 20 камней = 1 героическая (100%).</div>
+    <div class="row"><label>Хочу героических ≥</label><input type="range" id="b2-target" min="1" max="30" value="3" step="1" oninput="b1Slide('b2-target','b2-tv','')"><span class="v" id="b2-tv">3</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b2-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b2-prob','b2-pv','%')"><span class="v" id="b2-pv">90%</span></div>
+    <button class="run-btn" id="b2-btn" onclick="bRun(2)">Рассчитать</button>
+    <div class="status" id="b2-st"></div>
+    <div class="res" id="b2-res" style="display:none">
+      <div class="res-left" id="b2-label"></div>
+      <div class="res-right">
+        <div class="res-val heroic" id="b2-val">—</div>
+        <div class="res-unit">редких карт</div>
+        <div class="res-prob" id="b2-prob-out"></div>
+        <div class="res-ev" id="b2-ev"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block">
+    <div class="block-title">Героические → Фиолетовые</div>
+    <div class="block-sub">Синтез: 4 героических. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 фиолетовая (100%).</div>
+    <div class="tog" id="b3-tog">
+      <button class="tb" onclick="b3SetSc(0.09,this)">9%</button>
+      <button class="tb on" onclick="b3SetSc(0.11,this)">11%</button>
+    </div>
+    <div class="row"><label>Хочу фиолетовых ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="b1Slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
+    <div class="row"><label>Вероятность</label><input type="range" id="b3-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b3-prob','b3-pv','%')"><span class="v" id="b3-pv">90%</span></div>
+    <button class="run-btn" id="b3-btn" onclick="bRun(3)">Рассчитать</button>
+    <div class="status" id="b3-st"></div>
+    <div class="res" id="b3-res" style="display:none">
+      <div class="res-left" id="b3-label"></div>
+      <div class="res-right">
+        <div class="res-val purple" id="b3-val">—</div>
+        <div class="res-unit">героических карт</div>
+        <div class="res-prob" id="b3-prob-out"></div>
+        <div class="res-ev" id="b3-ev"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const TRIALS_MAIN = 40000;
+const TRIALS_DIST = 50000;
+
+// ===== ТАБЫ =====
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.page').forEach((p,j) => p.classList.toggle('active', i===j));
+}
+
+// ===== ОБЩИЕ УТИЛИТЫ =====
+function simSynth(cards, chance, target, trials) {
+  let ok = 0;
+  const c0 = Math.round(cards);
+  for (let i = 0; i < trials; i++) {
+    let c = c0, out = 0, stones = 0;
+    while (c >= 4) {
+      c -= 4;
+      if (Math.random() < chance) out++;
+      else { stones++; c++; }
+    }
+    out += Math.floor(stones / 20);
+    if (out >= target) ok++;
+  }
+  return ok / trials;
+}
+
+function evSynth(cards, chance) {
+  if (cards < 4) return 0;
+  const att = cards / (4 - 3*(1-chance));
+  return att*chance + (att - att*chance)/20;
+}
+
+function binarySearch(cards, chance, target, targetProb, trials) {
+  let lo = 4, hi = 5000, found = null;
+  while (lo <= hi) {
+    const mid = Math.floor((lo+hi)/2);
+    if (simSynth(mid, chance, target, trials) >= targetProb) { found = mid; hi = mid-1; }
+    else lo = mid+1;
+  }
+  return found;
+}
+
+function calcChain(m, r) {
+  const C = 11;
+  const enh = r*C*0.9359;
+  const rareFromPacks = m*C*0.9193 + r*C*0.055;
+  const heroFromPacks = m*C*0.08 + r*C*0.009;
+  const rareFromEnh = Math.floor(enh/4)*0.3044;
+  const rareTotal = rareFromPacks + rareFromEnh;
+  const heroFromRare = Math.floor(rareTotal/4)*0.18;
+  return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
+}
+
+// ===== КАЛЬКУЛЯТОР 1 =====
+let p1PackType = 'master', p1Sc = 0.11;
+
+function p1SetPack(t,btn) { p1PackType=t; document.querySelectorAll('#p1-pack-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+function p1SetSynth(v,btn) { p1Sc=v; document.querySelectorAll('#p1-synth-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+function p1Slide(id,outId,s) { document.getElementById(outId).textContent = document.getElementById(id).value+s; }
+
+function p1GetPacks(n) {
+  if (p1PackType==='master') return {m:n,r:0};
+  if (p1PackType==='regular') return {m:0,r:n};
+  return {m:Math.max(1,Math.round(n/6)),r:Math.round(n*5/6)};
+}
+
+function p1Run() {
+  const targetProb = parseInt(document.getElementById('p1-prob').value)/100;
+  const targetPurple = parseInt(document.getElementById('p1-target').value);
+  document.getElementById('p1-btn').disabled = true;
+  document.getElementById('p1-status').textContent = 'Поиск...';
+  ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap'].forEach(id => document.getElementById(id).style.display='none');
+
+  setTimeout(() => {
+    let lo=1, hi=1000, found=null;
+    while (lo<=hi) {
+      const mid = Math.floor((lo+hi)/2);
+      const {m,r} = p1GetPacks(mid);
+      const {heroTotal} = calcChain(m,r);
+      if (heroTotal < 4) { lo=mid+1; continue; }
+      if (simSynth(heroTotal, p1Sc, targetPurple, TRIALS_MAIN) >= targetProb) { found=mid; hi=mid-1; }
+      else lo=mid+1;
+    }
+
+    if (!found) { document.getElementById('p1-status').textContent='Не найдено (>1000 паков)'; document.getElementById('p1-btn').disabled=false; return; }
+
+    const {m,r} = p1GetPacks(found);
+    const {enh,rareTotal,heroTotal} = calcChain(m,r);
+    const finalProb = simSynth(heroTotal, p1Sc, targetPurple, TRIALS_MAIN);
+    const ev = evSynth(heroTotal, p1Sc);
+
+    document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
+    document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
+    document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
+    document.getElementById('p1-chain-wrap').style.display='block';
+    document.getElementById('p1-big-val').textContent = m+r;
+    document.getElementById('p1-big-sub').textContent = `для ≥${targetPurple} фиолетовых с вероятностью ${Math.round(targetProb*100)}%`;
+    document.getElementById('p1-big').style.display='block';
+    document.getElementById('p1-r-master').textContent = m;
+    document.getElementById('p1-r-regular').textContent = r;
+    document.getElementById('p1-pack-grid').style.display='grid';
+    document.getElementById('p1-r-hero').textContent = heroTotal.toFixed(1);
+    document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
+    document.getElementById('p1-r-prob').textContent = (finalProb*100).toFixed(1)+'%';
+    document.getElementById('p1-result-card').style.display='block';
+    document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+    document.getElementById('p1-note').textContent = p1PackType==='mix'?'Смешанный режим: 1 мастер пак на каждые 5 обычных.':'';
+    document.getElementById('p1-btn').disabled=false;
+  }, 50);
+}
+
+// ===== КАЛЬКУЛЯТОР 2 =====
+let p2Sc = 0.11, p2Chart = null;
+
+function p2SetSynth(v,btn) { p2Sc=v; document.querySelectorAll('#p2-synth-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); p2UpdateStats(); }
+function p2Slide() {
+  const m = parseInt(document.getElementById('p2-m').value);
+  const r = parseInt(document.getElementById('p2-r').value);
+  document.getElementById('p2-mv').textContent = m;
+  document.getElementById('p2-rv').textContent = r;
+  p2UpdateStats();
+}
+function p2UpdateStats() {
+  const m = parseInt(document.getElementById('p2-m').value);
+  const r = parseInt(document.getElementById('p2-r').value);
+  const {rareTotal,heroTotal} = calcChain(m,r);
+  document.getElementById('p2-s-rare').textContent = rareTotal.toFixed(1);
+  document.getElementById('p2-s-hero').textContent = heroTotal.toFixed(1);
+  const ev = evSynth(heroTotal, p2Sc);
+  document.getElementById('p2-s-purp').textContent = ev>0 ? ev.toFixed(2) : '—';
+}
+
+function p2Run() {
+  const m = parseInt(document.getElementById('p2-m').value);
+  const r = parseInt(document.getElementById('p2-r').value);
+  const {heroTotal} = calcChain(m,r);
+  if (heroTotal < 4) { document.getElementById('p2-status').textContent='Недостаточно героических карт'; return; }
+  document.getElementById('p2-btn').disabled=true;
+  document.getElementById('p2-status').textContent='Симуляция...';
+
+  setTimeout(() => {
+    const h0 = Math.round(heroTotal);
+    const freq = {};
+    for (let i=0; i<TRIALS_DIST; i++) {
+      let h=h0, purple=0, stones=0;
+      while (h>=4) { h-=4; if(Math.random()<p2Sc) purple++; else {stones++; h++;} }
+      purple += Math.floor(stones/20);
+      freq[purple] = (freq[purple]||0)+1;
+    }
+    const keys = Object.keys(freq).map(Number).sort((a,b)=>a-b);
+    const maxP = keys[keys.length-1];
+    const labels=[], data=[];
+    for (let k=0; k<=maxP; k++) { labels.push(k); data.push((freq[k]||0)/TRIALS_DIST*100); }
+
+    if (p2Chart) p2Chart.destroy();
+    p2Chart = new Chart(document.getElementById('p2-chart'), {
+      type:'bar',
+      data:{ labels, datasets:[{ label:'%', data, backgroundColor:'#1D9E75', borderRadius:3, borderSkipped:false }] },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title:ctx=>`${ctx[0].label} фиолетовых`, label:ctx=>`${ctx.raw.toFixed(1)}% случаев` } } },
+        scales:{
+          x:{ title:{display:true,text:'Количество фиолетовых',color:'#888',font:{size:11}}, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#888',font:{size:11}} },
+          y:{ title:{display:true,text:'% случаев',color:'#888',font:{size:11}}, grid:{color:'rgba(255,255,255,0.06)'}, ticks:{color:'#888',font:{size:11},callback:v=>v.toFixed(0)+'%'} }
+        }
+      }
+    });
+
+    const tbody = document.getElementById('p2-tbody');
+    tbody.innerHTML='';
+    let cum=0;
+    const rows=[];
+    for (let k=maxP; k>=0; k--) { cum+=((freq[k]||0)/TRIALS_DIST*100); rows.push({k,cum:Math.min(cum,100)}); }
+    rows.reverse().forEach(t=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td>≥ ${t.k}</td><td>${data[t.k]?data[t.k].toFixed(1)+'%':'0%'}</td><td class="acc">${t.cum.toFixed(1)}%</td>`;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('p2-table').style.display='table';
+    document.getElementById('p2-status').textContent=`Готово (${TRIALS_DIST.toLocaleString()} итераций)`;
+    document.getElementById('p2-note').textContent=`Героических в расчёте: ${h0}`;
+    document.getElementById('p2-btn').disabled=false;
+  }, 50);
+}
+
+p2UpdateStats();
+
+// ===== КАЛЬКУЛЯТОР 3 =====
+let b3Sc = 0.11;
+function b3SetSc(v,btn) { b3Sc=v; document.querySelectorAll('#b3-tog .tb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); }
+function b1Slide(id,outId,s) { document.getElementById(outId).textContent=document.getElementById(id).value+s; }
+
+function bRun(block) {
+  const cfgs = {
+    1:{chance:0.3044, tId:'b1-target', pId:'b1-prob', btnId:'b1-btn', stId:'b1-st', resId:'b1-res', labelId:'b1-label', valId:'b1-val', probId:'b1-prob-out', evId:'b1-ev', unit:'фиолетовых → редких'},
+    2:{chance:0.18,   tId:'b2-target', pId:'b2-prob', btnId:'b2-btn', stId:'b2-st', resId:'b2-res', labelId:'b2-label', valId:'b2-val', probId:'b2-prob-out', evId:'b2-ev', unit:'героических → редких'},
+    3:{chance:b3Sc,   tId:'b3-target', pId:'b3-prob', btnId:'b3-btn', stId:'b3-st', resId:'b3-res', labelId:'b3-label', valId:'b3-val', probId:'b3-prob-out', evId:'b3-ev', unit:'фиолетовых → героических'},
+  };
+  if (block===3) cfgs[3].chance=b3Sc;
+  const cfg=cfgs[block];
+  const target=parseInt(document.getElementById(cfg.tId).value);
+  const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
+  const unitMap={1:'редких',2:'героических',3:'фиолетовых'};
+
+  document.getElementById(cfg.btnId).disabled=true;
+  document.getElementById(cfg.stId).textContent='Симуляция...';
+  document.getElementById(cfg.resId).style.display='none';
+
+  setTimeout(()=>{
+    const found=binarySearch(0, cfg.chance, target, targetProb, TRIALS_MAIN);
+    if (!found) { document.getElementById(cfg.stId).textContent='Не найдено (>5000 карт)'; document.getElementById(cfg.btnId).disabled=false; return; }
+
+    const finalProb=simSynth(found, cfg.chance, target, TRIALS_MAIN);
+    const ev=evSynth(found, cfg.chance);
+    const unitIn={1:'улучшенных',2:'редких',3:'героических'}[block];
+
+    document.getElementById(cfg.labelId).textContent=`для ≥${target} ${unitMap[block]} при ${Math.round(targetProb*100)}%`;
+    document.getElementById(cfg.valId).textContent=found.toLocaleString();
+    document.getElementById(cfg.probId).textContent=`Реальная вероятность: ${(finalProb*100).toFixed(1)}%`;
+    document.getElementById(cfg.evId).textContent=`EV: ${ev.toFixed(2)} ${unitMap[block]}`;
+    document.getElementById(cfg.resId).style.display='flex';
+    document.getElementById(cfg.stId).textContent=`Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+    document.getElementById(cfg.btnId).disabled=false;
+  }, 50);
+}
+</script>
+</body>
+</html>
