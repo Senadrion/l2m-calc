@@ -184,7 +184,41 @@
     <div class="result-row"><span class="result-label" id="p1-r-final-label">Карт класса EV</span><span class="result-val" id="p1-r-ev">—</span></div>
     <div class="result-row"><span class="result-label" id="p1-r-prob-label">Вероятность получить цель</span><span class="result-val green" id="p1-r-prob">—</span></div>
   </div>
+  <div id="p1-scenarios" style="display:none;margin-top:1rem">
+    <div class="sec-title" style="margin-bottom:.75rem">Сценарии</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="pack-card" style="border-left:2px solid #E24B4A;border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+        <div class="pack-label">Плохой сценарий (25%)</div>
+        <div class="pack-val" id="p1-s25">—</div>
+      </div>
+      <div class="pack-card" style="border-left:2px solid var(--amber);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+        <div class="pack-label">Типичный (50%)</div>
+        <div class="pack-val" id="p1-s50">—</div>
+      </div>
+      <div class="pack-card" style="border-left:2px solid var(--green);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+        <div class="pack-label">Хороший (75%)</div>
+        <div class="pack-val" id="p1-s75">—</div>
+      </div>
+      <div class="pack-card" style="border-left:2px solid var(--blue);border-radius:0 var(--radius-sm) var(--radius-sm) 0">
+        <div class="pack-label">Почти гарантировано (99%)</div>
+        <div class="pack-val" id="p1-s99">—</div>
+      </div>
+    </div>
+  </div>
   <div class="note" id="p1-note"></div>
+  <div id="p1-prob-table-wrap" style="display:none;margin-top:1rem">
+    <div class="sec-title" style="margin-bottom:.6rem">Распределение вероятностей</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr>
+          <th style="text-align:left;padding:6px 10px;border-bottom:0.5px solid var(--border);color:var(--text2);font-weight:500">Получишь ≥</th>
+          <th style="text-align:right;padding:6px 10px;border-bottom:0.5px solid var(--border);color:var(--text2);font-weight:500">Вероятность</th>
+          <th style="text-align:right;padding:6px 10px;border-bottom:0.5px solid var(--border);color:var(--text2);font-weight:500">Оценка</th>
+        </tr>
+      </thead>
+      <tbody id="p1-prob-tbody"></tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ===== КАЛЬКУЛЯТОР 2: Сколько карт нужно ===== -->
@@ -415,7 +449,7 @@ function p1SetPack(t, btn) {
   document.getElementById('p1-prob-sec').style.display = isMix ? 'none' : 'block';
   document.getElementById('p1-target-sec').style.display = isMix ? 'none' : 'block';
   document.getElementById('p1-btn').textContent = isMix ? 'Рассчитать из этих паков' : 'Найти минимум паков';
-  ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap'].forEach(id => document.getElementById(id).style.display='none');
+  ['p1-big','p1-pack-grid','p1-result-card','p1-chain-wrap','p1-prob-table-wrap','p1-scenarios'].forEach(id => document.getElementById(id).style.display='none');
 }
 
 function p1MixSlide() {
@@ -456,28 +490,70 @@ function p1Run() {
       const m = parseInt(document.getElementById('p1-mix-m').value);
       const r = parseInt(document.getElementById('p1-mix-r').value);
       const {enh, rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
-      const ev = evSynth(heroTotal, cfg.sc);
+      const h0 = Math.round(heroTotal);
+
+      // Полная симуляция
+      const TRIALS_FULL = 50000;
+      const results = [];
+      for (let i = 0; i < TRIALS_FULL; i++) {
+        let c = h0, out = 0, st = 0;
+        while (c >= 4) { c -= 4; if (Math.random() < cfg.sc) out++; else { st++; c++; } }
+        out += Math.floor(st / 20);
+        results.push(out);
+      }
+      results.sort((a, b) => a - b);
+
+      // Перцентили
+      const p = (pct) => results[Math.floor(pct / 100 * TRIALS_FULL)];
+      const s25 = p(25), s50 = p(50), s75 = p(75), s99 = p(99);
+      const evVal = results.reduce((a, b) => a + b, 0) / TRIALS_FULL;
+
+      // Частоты для таблицы
+      const freq = {};
+      results.forEach(v => { freq[v] = (freq[v] || 0) + 1; });
+      const maxOut = results[results.length - 1];
 
       document.getElementById('p1-c-enh').textContent = enh.toFixed(1);
       document.getElementById('p1-c-rare').textContent = rareTotal.toFixed(1);
       document.getElementById('p1-c-hero').textContent = heroTotal.toFixed(1);
       document.getElementById('p1-chain-sub').textContent = `↓ синтез героических → ${cfg.label}`;
       document.getElementById('p1-chain-wrap').style.display = 'block';
-      document.getElementById('p1-big-label').textContent = cfg.label + ' (EV)';
-      document.getElementById('p1-big-val').textContent = ev.toFixed(1);
+      document.getElementById('p1-big-label').textContent = cfg.label + ' (среднее)';
+      document.getElementById('p1-big-val').textContent = evVal.toFixed(1);
       document.getElementById('p1-big-sub').textContent = `из ${m} мастер + ${r} обычных паков`;
       document.getElementById('p1-big').style.display = 'block';
       document.getElementById('p1-r-master').textContent = m;
       document.getElementById('p1-r-regular').textContent = r;
       document.getElementById('p1-pack-grid').style.display = 'grid';
-      document.getElementById('p1-r-hero').textContent = heroTotal.toFixed(1);
-      document.getElementById('p1-r-final-label').textContent = cfg.label + ' EV';
-      document.getElementById('p1-r-ev').textContent = ev.toFixed(2);
-      document.getElementById('p1-r-prob-label').textContent = 'Вероятность ≥1';
-      const prob1 = simSynth(heroTotal, cfg.sc, 1, TRIALS_MAIN);
-      document.getElementById('p1-r-prob').textContent = (prob1 * 100).toFixed(1) + '%';
-      document.getElementById('p1-result-card').style.display = 'block';
-      document.getElementById('p1-status').textContent = `Готово (${TRIALS_MAIN.toLocaleString()} итераций)`;
+
+      document.getElementById('p1-result-card').style.display = 'none';
+      document.getElementById('p1-s25').textContent = s25;
+      document.getElementById('p1-s50').textContent = s50;
+      document.getElementById('p1-s75').textContent = s75;
+      document.getElementById('p1-s99').textContent = s99;
+      document.getElementById('p1-scenarios').style.display = 'block';
+
+      // Таблица вероятностей
+      const tbody = document.getElementById('p1-prob-tbody');
+      tbody.innerHTML = '';
+      const evRound = Math.round(evVal);
+      const showMax = Math.min(maxOut, Math.max(evRound * 2, 10));
+      for (let k = 1; k <= showMax; k++) {
+        let cumK = 0;
+        for (let j = k; j <= maxOut; j++) cumK += (freq[j] || 0);
+        const pct = cumK / TRIALS_FULL * 100;
+        const isEv = k === evRound;
+        const color = pct >= 75 ? 'var(--green)' : pct >= 40 ? 'var(--text)' : 'var(--text2)';
+        const bg = isEv ? 'background:rgba(29,158,117,0.08)' : '';
+        let label = pct >= 99 ? 'почти гарантировано' : pct >= 75 ? 'очень вероятно' : pct >= 50 ? 'вероятно' : pct >= 25 ? 'возможно' : pct >= 10 ? 'маловероятно' : 'редко';
+        tbody.innerHTML += `<tr style="${bg}">
+          <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);color:var(--text)">≥ ${k}${isEv ? ' ← среднее' : ''}</td>
+          <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;font-weight:500;color:${color}">${pct.toFixed(1)}%</td>
+          <td style="padding:7px 10px;border-bottom:0.5px solid var(--border);text-align:right;color:var(--text2);font-size:12px">${label}</td>
+        </tr>`;
+      }
+      document.getElementById('p1-prob-table-wrap').style.display = 'block';
+      document.getElementById('p1-status').textContent = `Готово (${TRIALS_FULL.toLocaleString()} итераций)`;
       document.getElementById('p1-note').textContent = '';
 
     } else {
