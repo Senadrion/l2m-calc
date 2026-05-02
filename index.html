@@ -228,12 +228,12 @@
 
   <div class="block">
     <div class="block-title">Героические → Фиолетовые</div>
-    <div class="block-sub">Синтез: 4 героических. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 фиолетовая (100%).</div>
+    <div class="block-sub">Синтез: 4 героических. При неудаче возвращается 1 героическая + 1 камень. 20 камней = 1 легендарная (100%).</div>
     <div class="tog" id="b3-tog">
       <button class="tb" onclick="b3SetSc(0.09,this)">9%</button>
       <button class="tb on" onclick="b3SetSc(0.11,this)">11%</button>
     </div>
-    <div class="row"><label>Хочу фиолетовых ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="b1Slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
+    <div class="row"><label>Хочу легендарных ≥</label><input type="range" id="b3-target" min="1" max="20" value="1" step="1" oninput="b1Slide('b3-target','b3-tv','')"><span class="v" id="b3-tv">1</span></div>
     <div class="row"><label>Вероятность</label><input type="range" id="b3-prob" min="50" max="99" value="90" step="1" oninput="b1Slide('b3-prob','b3-pv','%')"><span class="v" id="b3-pv">90%</span></div>
     <button class="run-btn" id="b3-btn" onclick="bRun(3)">Рассчитать</button>
     <div class="status" id="b3-st"></div>
@@ -546,7 +546,7 @@ function bRun(block) {
   const cfg=cfgs[block];
   const target=parseInt(document.getElementById(cfg.tId).value);
   const targetProb=parseInt(document.getElementById(cfg.pId).value)/100;
-  const unitMap={1:'редких',2:'героических',3:'фиолетовых'};
+  const unitMap={1:'редких',2:'героических',3:'легендарных'};
   const unitIn={1:'улучшенных',2:'редких',3:'героических'};
 
   document.getElementById(cfg.btnId).disabled=true;
