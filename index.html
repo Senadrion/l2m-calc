@@ -351,7 +351,15 @@ function switchTab(i) {
 }
 
 // ===== ОБЩИЕ УТИЛИТЫ =====
-function simSynth(cards, chance, target, trials) {
+function poisson(lambda) {
+  if (lambda <= 0) return 0;
+  const L = Math.exp(-lambda);
+  let k = 0, p = 1;
+  do { k++; p *= Math.random(); } while (p > L);
+  return k - 1;
+}
+
+function simSynth(cards, chance, target, trials, legBonus = 0) {
   let ok = 0;
   const c0 = Math.round(cards);
   for (let i = 0; i < trials; i++) {
@@ -361,7 +369,7 @@ function simSynth(cards, chance, target, trials) {
       if (Math.random() < chance) out++;
       else { stones++; c++; }
     }
-    out += Math.floor(stones / 20);
+    out += Math.floor(stones / 20) + (legBonus > 0 ? poisson(legBonus) : 0);
     if (out >= target) ok++;
   }
   return ok / trials;
@@ -440,12 +448,13 @@ function p1CalcChain(m, r, cfg) {
   const enh = r * C * 0.9359;
   const rareFromPacks = m * C * 0.9193 + r * C * 0.055;
   const heroFromPacks = m * C * 0.08 + r * C * 0.009;
+  const legFromPacks = m * C * 0.0007 + r * C * 0.0001;
   const synthsEnh = Math.floor(enh / 4);
   const attEnh = synthsEnh / (3 + cfg.e2r);
   const rareFromEnh = attEnh * cfg.e2r;
   const rareTotal = rareFromPacks + rareFromEnh;
   const heroFromRare = evSynth(rareTotal, cfg.r2h);
-  return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare };
+  return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare, legFromPacks };
 }
 
 // ===== КАЛЬКУЛЯТОР 1 =====
@@ -527,10 +536,10 @@ function p1Run() {
       while (lo <= hi) {
         const mid = Math.floor((lo + hi) / 2);
         const {m, r} = p1GetPacks(mid);
-        const {rareTotal, heroTotal} = p1CalcChain(m, r, cfg);
+        const {rareTotal, heroTotal, legFromPacks} = p1CalcChain(m, r, cfg);
         const inputCards = isLegendary ? heroTotal : rareTotal;
-        if (inputCards < 4) { lo = mid + 1; continue; }
-        if (simSynth(inputCards, finalChance, targetN, TRIALS_MAIN) >= targetProb) { found = mid; hi = mid - 1; }
+        const bonus = isLegendary ? legFromPacks : 0;
+        if (simSynth(inputCards, finalChance, targetN, TRIALS_MAIN, bonus) >= targetProb) { found = mid; hi = mid - 1; }
         else lo = mid + 1;
       }
 
@@ -550,10 +559,11 @@ function p1Run() {
     }
 
     // Дальше логика единая для всех режимов: симулируем найденные (или заданные) паки
-    const {enh, rareTotal, heroTotal} = p1CalcChain(m_final, r_final, cfg);
+    const {enh, rareTotal, heroTotal, legFromPacks} = p1CalcChain(m_final, r_final, cfg);
     const inputCards = isLegendary ? Math.round(heroTotal) : Math.round(rareTotal);
+    const legBonus = isLegendary ? legFromPacks : 0;
 
-    if (inputCards < 4) {
+    if (inputCards < 4 && legBonus < 0.5) {
       document.getElementById('p1-big-label').textContent = finalLabel + ' (среднее)';
       document.getElementById('p1-big-val').textContent = '0';
       document.getElementById('p1-big-sub').textContent = `из ${m_final} мастер + ${r_final} обычных паков — недостаточно карт для синтеза`;
@@ -572,7 +582,7 @@ function p1Run() {
       while (results.length < end) {
         let c = inputCards, out = 0, st = 0;
         while (c >= 4) { c -= 4; if (Math.random() < finalChance) out++; else { st++; c++; } }
-        out += Math.floor(st / 20);
+        out += Math.floor(st / 20) + (legBonus > 0 ? poisson(legBonus) : 0);
         results.push(out);
       }
       if (results.length < TRIALS_FULL) {
