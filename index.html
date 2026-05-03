@@ -449,9 +449,7 @@ function p1CalcChain(m, r, cfg) {
   const rareFromPacks = m * C * 0.9193 + r * C * 0.055;
   const heroFromPacks = m * C * 0.08 + r * C * 0.009;
   const legFromPacks = m * C * 0.0007 + r * C * 0.0001;
-  const synthsEnh = Math.floor(enh / 4);
-  const attEnh = synthsEnh / (3 + cfg.e2r);
-  const rareFromEnh = attEnh * cfg.e2r;
+  const rareFromEnh = evNoStones(enh, cfg.e2r);
   const rareTotal = rareFromPacks + rareFromEnh;
   const heroFromRare = evSynth(rareTotal, cfg.r2h);
   return { enh, rareTotal, heroTotal: heroFromPacks + heroFromRare, legFromPacks };
